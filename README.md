@@ -26,7 +26,7 @@ No build step. Edit files and refresh.
 
 ```sh
 npm test          # finance engine tests (Node 18+)
-npm run pages     # regenerate HTML pages, sitemap and robots.txt after editing copy
+npm run pages     # regenerate pages after ANY change to copy, JS or CSS (updates cache-busting hashes)
 ```
 
 Preview locally with any static server from the parent folder (`npx serve ..`, then open `/LoanCalc/`).

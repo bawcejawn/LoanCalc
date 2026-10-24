@@ -120,7 +120,7 @@ main { padding: 26px clamp(16px, 3vw, 40px) 60px; min-width: 0; }
   border: 1px solid var(--rule); border-radius: 8px; padding: 8px 10px; min-height: 40px;
   font-variant-numeric: tabular-nums;
 }
-.f input:focus, .f select:focus, textarea:focus { border-color: var(--action); outline: none; box-shadow: 0 0 0 3px color-mix(in srgb, var(--action) 22%, transparent); }
+.f input:focus, .f select:focus, textarea:focus { border-color: var(--action); outline: none; box-shadow: 0 0 0 3px rgba(31, 95, 191, .22); box-shadow: 0 0 0 3px color-mix(in srgb, var(--action) 22%, transparent); }
 .affix { position: relative; flex: 1; }
 .affix span { position: absolute; top: 50%; transform: translateY(-50%); color: var(--ink-3); font-size: 14px; pointer-events: none; }
 .affix .pre { left: 10px; } .affix .post { right: 10px; }
@@ -220,7 +220,7 @@ table.ledger { width: 100%; border-collapse: collapse; font-variant-numeric: tab
 
 /* drop zone */
 .drop { border: 2px dashed var(--rule); border-radius: 12px; padding: 32px 20px; text-align: center; background: var(--field); cursor: pointer; }
-.drop.over { border-color: var(--action); background: color-mix(in srgb, var(--action) 8%, var(--field)); }
+.drop.over { border-color: var(--action); background: var(--sheet); background: color-mix(in srgb, var(--action) 8%, var(--field)); }
 .drop strong { display: block; font-size: 17px; margin-bottom: 4px; }
 .found { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 4px 18px; }
 .conf { font-size: 11.5px; font-weight: 600; color: var(--ink-3); }
@@ -326,6 +326,7 @@ details.more-opts > summary span { display: block; font-weight: 400; color: var(
   .nav .all-tools > summary { white-space: nowrap; border: 1px dashed var(--rule); border-radius: 999px; padding: 6px 12px; font-size: 14px; }
   .nav .all-tools[open] { flex-basis: 100%; }
   .nav:has(.all-tools[open]) { flex-wrap: wrap; }
+  .nav.open-all { flex-wrap: wrap; } /* same thing for browsers without :has() */
   .nav .all-tools[open] a { display: inline-flex; margin: 4px 4px 0 0; }
   .nav .all-tools[open] h2 { display: block; flex-basis: 100%; }
 }

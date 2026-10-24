@@ -1,3 +1,4 @@
+import './polyfills.js'; // must stay first
 // MortgageForge app shell: theme, savings ribbon, in-place navigation between tools, optional ads/affiliates/tip jar.
 import { state, derive, subscribe, emit, firstMonth, $0, ym, dur, destroyCharts, toast, esc } from './core.js';
 import * as F from './finance.js';
@@ -28,6 +29,9 @@ function initTheme() {
   let t = null;
   try { t = localStorage.getItem('mf:theme'); } catch {}
   if (t) document.documentElement.dataset.theme = t;
+  bindTheme();
+}
+function bindTheme() {
   document.getElementById('theme-btn')?.addEventListener('click', () => {
     const dark = document.documentElement.dataset.theme ? document.documentElement.dataset.theme === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches;
     const next = dark ? 'light' : 'dark';
@@ -126,6 +130,8 @@ function buildNav() {
     ${mine.length ? `<h2>Your tools</h2>${mine.map(link).join('')}` : ''}
     <details class="all-tools"${!mine.length ? '' : ''}><summary>All tools</summary>${navOriginal}</details>`;
   nav.querySelectorAll('.all-tools a[aria-current]').forEach((a) => a.removeAttribute('aria-current'));
+  const all = nav.querySelector('.all-tools');
+  all?.addEventListener('toggle', () => nav.classList.toggle('open-all', all.open));
 }
 function remount() { mountTool(document.body.dataset.tool); ribbon(); }
 
@@ -139,10 +145,18 @@ async function go(href, push = true) {
     const res = await fetch(href, { credentials: 'same-origin' });
     if (!res.ok) throw 0;
     const doc = new DOMParser().parseFromString(await res.text(), 'text/html');
-    for (const sel of ['.tool-head', '.article']) {
+    // Pages live at different depths, so every relative link must come from the new page:
+    // swap the content, header links and footer, and rebuild the nav from the new page's copy.
+    for (const sel of ['.tool-head', '.article', '.foot', '.brand', '.top-actions']) {
       const a = document.querySelector(sel), b = doc.querySelector(sel);
-      if (a && b) a.replaceWith(b);
+      if (a && b) a.replaceWith(document.importNode(b, true));
     }
+    const newNav = doc.querySelector('.nav');
+    if (newNav) navOriginal = newNav.innerHTML;
+    document.body.dataset.root = doc.body.dataset.root;
+    const tool = document.getElementById('tool'), newTool = doc.getElementById('tool');
+    if (tool && !newTool) tool.remove();
+    if (!tool && newTool) document.querySelector('.tool-head').after(document.importNode(newTool, true));
     document.title = doc.title;
     for (const sel of ['meta[name="description"]', 'link[rel="canonical"]']) {
       const a = document.querySelector(sel), b = doc.querySelector(sel); if (a && b) a.replaceWith(b);
@@ -150,7 +164,9 @@ async function go(href, push = true) {
     document.body.dataset.tool = doc.body.dataset.tool;
     if (push) history.pushState({}, '', href);
     markNav();
+    bindTheme(); tipJar();
     await mountTool(doc.body.dataset.tool);
+    ribbon();
     window.scrollTo({ top: 0 });
     document.querySelector('.tool-head h1')?.focus({ preventScroll: true });
   } catch { location.href = href; }

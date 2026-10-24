@@ -1,6 +1,7 @@
 // Generates every HTML page, sitemap.xml and robots.txt from one template.
 // Run after editing copy:  npm run pages   (no dependencies; the output is committed and served as-is)
-import { writeFileSync, mkdirSync } from 'node:fs';
+import { writeFileSync, mkdirSync, readFileSync, readdirSync } from 'node:fs';
+import { createHash } from 'node:crypto';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -8,6 +9,13 @@ const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 // Your live URL. Change this if you add a custom domain (and add a CNAME file).
 const BASE = 'https://bawcejawn.github.io/LoanCalc/';
 const UPDATED = '2026-10-23';
+
+// Cache busting: every JS module and the stylesheet get a ?v=<content hash> so returning visitors
+// always load matching files after a deploy. Module URLs are remapped with an import map.
+const hash = (f) => createHash('sha1').update(readFileSync(join(ROOT, f))).digest('hex').slice(0, 8);
+const MODULES = ['assets/js', 'assets/js/tools'].flatMap((d) => readdirSync(join(ROOT, d)).filter((f) => f.endsWith('.js')).map((f) => `${d}/${f}`));
+const VER = Object.fromEntries([...MODULES, 'assets/css/app.css'].map((f) => [f, hash(f)]));
+const importMap = (root) => JSON.stringify({ imports: Object.fromEntries(MODULES.map((f) => [root + f, `${root}${f}?v=${VER[f]}`])) });
 
 const NAV = [
   ['Start here', [['mortgage-savings-check/', 'My savings'], ['mortgage-statement-reader/', 'Upload a document']]],
@@ -324,7 +332,8 @@ function page(p) {
 <link rel="icon" href="${root}assets/icon.svg" type="image/svg+xml">
 <link rel="manifest" href="${root}manifest.webmanifest">
 <link rel="preload" href="${root}assets/fonts/public-sans.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="${root}assets/css/app.css">
+<link rel="stylesheet" href="${root}assets/css/app.css?v=${VER['assets/css/app.css']}">
+<script type="importmap">${importMap(root)}</script>
 <script>try{var t=localStorage.getItem('mf:theme');if(t)document.documentElement.dataset.theme=t}catch(e){}</script>
 <script type="application/ld+json">${JSON.stringify(ld.length === 1 ? ld[0] : ld)}</script>
 </head>
@@ -350,7 +359,8 @@ function page(p) {
 </main>
 </div>
 <script src="${root}assets/vendor/chart.umd.min.js" defer></script>
-<script type="module" src="${root}assets/js/app.js"></script>
+<script type="module" src="${root}assets/js/app.js?v=${VER['assets/js/app.js']}"></script>
+<script nomodule>document.getElementById('main').insertAdjacentHTML('afterbegin','<p class="note">This browser is too old to run the calculators. Please update it, or open this page in a current version of Chrome, Safari, Edge or Firefox.</p>')</script>
 </body>
 </html>
 `;
@@ -363,7 +373,7 @@ for (const p of PAGES) {
 }
 // 404 uses absolute asset paths since it can be served from any depth.
 const nf = page({ path: '', tool: '', title: 'Page not found | MortgageForge', description: 'This page does not exist.', h1: 'That page doesn’t exist', intro: '<a href="/LoanCalc/">Go to the mortgage calculator</a>.', body: '', faq: [] })
-  .replaceAll('href="./', 'href="/LoanCalc/').replaceAll('src="./', 'src="/LoanCalc/').replace('data-root="./"', 'data-root="/LoanCalc/"');
+  .split('href="./').join('href="/LoanCalc/').split('src="./').join('src="/LoanCalc/').replace('data-root="./"', 'data-root="/LoanCalc/"');
 writeFileSync(join(ROOT, '404.html'), nf);
 writeFileSync(join(ROOT, 'sitemap.xml'), `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${PAGES.map((p) => `  <url><loc>${BASE}${p.path}</loc><lastmod>${UPDATED}</lastmod></url>`).join('\n')}\n</urlset>\n`);
 writeFileSync(join(ROOT, 'robots.txt'), `User-agent: *\nAllow: /\nSitemap: ${BASE}sitemap.xml\n`);

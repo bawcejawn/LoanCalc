@@ -21,7 +21,10 @@ Everything you need to run, extend, grow and monetize MortgageForge. The site is
 
 ```
 LoanCalc/
-├── index.html                          # Payment & PITI calculator (home)
+├── index.html                          # Guided start (goal → questions → personal summary)
+├── mortgage-payment-calculator/        # Payment & PITI calculator
+├── mortgage-savings-check/             # My savings: every opportunity, ranked
+├── credit-score-mortgage-rate-calculator/
 ├── amortization-schedule-calculator/   # Schedule, extra payments, charts, CSV
 ├── pmi-removal-calculator/             # PMI timing and removal routes
 ├── extra-payment-calculator/           # Optimizer + prepay vs invest
@@ -29,7 +32,7 @@ LoanCalc/
 ├── home-affordability-calculator/      # 3 budgets from income and debts
 ├── fha-vs-conventional-calculator/     # Conventional/FHA/VA/USDA/Jumbo/ARM
 ├── arm-calculator/                     # ARM reset projector
-├── mortgage-statement-reader/          # PDF upload & auto-fill
+├── mortgage-statement-reader/          # Statement / insurance dec page / Loan Estimate reader
 ├── saved-scenarios/                    # Save, compare up to 4, share link
 ├── guides/…/                           # Content pages for SEO & AdSense review
 ├── privacy/
@@ -43,7 +46,8 @@ LoanCalc/
 │       ├── config.js        # 2026 program rules (loan limits, MIP, VA, USDA, HPA) with sources
 │       ├── finance.js       # Pure math engine (tested)
 │       ├── core.js          # State, derived loan plan, formatting, form fields, chart helpers
-│       ├── app.js           # Shell: savings ribbon, in-place navigation, ads/affiliates/tip jar
+│       ├── app.js           # Shell: savings bar, in-place navigation, progressive panels, ads/affiliates/tip jar
+│       ├── ux.js            # Visitor goal, opened tools, suggestions (progressive disclosure)
 │       ├── site-config.js   # Your switches: ads, affiliate links, Koinos tip jar
 │       ├── statement.js     # pdf.js text extraction + statement parser
 │       └── tools/           # One module per tool
@@ -181,7 +185,75 @@ Keep all calculators fully usable with zero blockchain interaction.
 
 Local preview: any static server pointed at the parent folder works, e.g. `npx serve ..` then open `/LoanCalc/`. Opening `index.html` straight from disk won't work because browsers block ES modules on `file://`.
 
-## 10. Feature ideas that show people more savings
+## 10. Progressive disclosure (how the site stays simple)
+
+The site starts with one question and reveals more as the visitor shows interest. State lives in `localStorage` under `mf:ux` (`assets/js/ux.js`); nothing is sent anywhere.
+
+1. **Home is a guided start** (`tools/start.js`): "What would you like to do?" → 4 goals → 3–6 questions, one per screen with big inputs, quick-pick chips, Back/Skip. Owners can jump to uploading a statement instead.
+2. **Summary page after the questions**: the monthly payment, the 3 best moves (from the savings engine), and "Your tools" for their goal. One or two "You might also want" cards are dashed to look optional.
+3. **Personal navigation**: the sidebar shows Home, then only "Your tools" (goal tools + anything opened). Everything else sits under a collapsed "All tools".
+4. **Each tool shows two result panels first**. The rest wait behind one "Show N more" button that names what's inside. The choice is remembered per tool.
+5. **Inputs show the essentials**. Loan type, taxes, insurance, HOA, escrow and original loan details are under "More options".
+6. **A "Where to next" card** at the end of each tool suggests 2 related tools (`RELATED` map in `ux.js`), preferring ones not opened yet. Opening one adds it to "Your tools".
+7. **On phones** the answer comes first and the inputs follow under "Change the numbers"; the sticky bar keeps the key figures in view.
+
+To tune: edit `GOALS` (which tools each goal starts with), `RELATED` (what to suggest next), `STEPS` in `start.js` (the questions), and `keep` in `progressive()` in `app.js` (how many panels show before "Show more").
+
+## 11. Soft credit pulls: why not on this site, and what to do instead
+
+A real soft pull isn't something a static, free, privacy-first site can do safely:
+
+- **Legal basis**: under the FCRA even a soft pull needs a permissible purpose, typically the consumer's written instructions for prequalification, with disclosures and an audit trail. (Not legal advice; talk to counsel before going near this.)
+- **Bureau access**: you'd need a credentialed account with a bureau or reseller, which involves an application, verification of your business and use case, security requirements, and per-pull fees.
+- **A backend**: API keys and credit data can't live in browser code, so you'd need a server. The data you'd then hold (SSN, credit report) brings safeguarding duties under the GLBA Safeguards Rule, breach exposure, and more compliance if you use it to pre-qualify or sell leads.
+
+What MortgageForge does instead (built):
+
+- **Self-reported score band** everywhere a score matters, with a note that we never check credit.
+- **Credit score impact tool** (`/credit-score-mortgage-rate-calculator/`): rate, PMI and payment at every band, estimated from Fannie Mae's LLPA matrix (updated 09-30-2026) relative to the rate the user was quoted. It shows the dollar value of moving up one band and links to the free official reports at AnnualCreditReport.com.
+- **Partner path for real pre-qualification (later)**: add an affiliate link to a licensed lender or rate marketplace that does the soft pull on *their* site with their consent flow. You earn the referral; the data never touches yours. Put it in `SITE.affiliates` with `tools: ['credit', 'savings']`.
+
+## 12. Document readers
+
+`assets/js/statement.js` reads three document types locally with pdf.js and detects which one it is:
+
+| Document | Fields | Used for |
+|---|---|---|
+| Mortgage statement | balance, rate, P&I, escrow, MI, maturity → payments left, original amount, next due | Current-loan mode, PMI, refi, escrow check |
+| Homeowners insurance declarations page | premium, all-perils and wind/hail deductibles, Coverage A–E, renewal date | Deductible savings and claim-free break-even, renewal reminder (.ics), dwelling coverage check, escrow check |
+| Loan Estimate / Closing Disclosure | sale price, loan amount, rate, term, P&I, escrow, closing costs, cash to close, points | Fills the purchase plan; tests whether the points pay off within the stay horizon |
+
+After confirming, visitors land on **My savings** (`/mortgage-savings-check/`), which splits results into "Save without paying more" (PMI, refinance with a rate target, credit, insurance, escrow, rate shopping, points) and "Put extra money to work" (best extra-payment strategy, payoff-by-date goal, the free 1/12 "biweekly"), with a chart, equity at 5/10/15 years, and print.
+
+Deeper calculators added to existing tools:
+- **Extra payments**: payoff-by-date solver, true biweekly vs 1/12-extra (with fee input), lump sum recast vs keep payment, cost of waiting.
+- **Refinance**: the highest rate that still pays within your stay (and within 3 years), points vs no points table, year-by-year advantage.
+- **PMI**: handles "already at 80%", downloadable HPA cancellation request letter, calendar reminder for the 80% date.
+
+## 13. Idea list status
+
+| Idea | Status |
+|---|---|
+| Personalized savings dashboard | Built (My savings + home summary) |
+| Bi-weekly vs monthly optimizer | Built (optimizer) |
+| Rate drop target | Built (refinance rate target + calendar reminder). Email alerts need a free form/email service later |
+| Closing cost & cash-to-close estimator | Partly (cash to close, Loan Estimate reader). Next: itemized fee estimator |
+| Rent vs buy | Next |
+| HELOC / equity simulator | Partly (equity at 5/10/15 yrs). Next: borrowing power at 80–85% CLTV |
+| Credit score impact | Built (LLPA-based) |
+| Multi-scenario timeline overlay | Next (saved plans on one balance chart) |
+| Printable plan | Built (print layout); branded PDF is a premium candidate |
+| Guided onboarding wizard | Built |
+| ZIP/state tax & insurance defaults | Next. Ship a small static JSON of state averages, labeled as estimates |
+| Progressive disclosure | Built |
+| My Plans library with tags | Partly (saved plans, backup/restore). Next: tags, duplicate |
+| Closing Disclosure / Loan Estimate upload | Built |
+| Confidence on extracted fields | Built ("found" / "check this" / "not found") |
+| Affiliate placements, premium report, sponsored lenders, embed | Slots ready in `site-config.js`; add partners when approved |
+| Koinos tip jar / plan snapshot | Tip jar built (off); on-chain snapshot remains a sketch |
+| Shareable links, interlinking | Built |
+
+## 14. More feature ideas
 
 1. **Recast calculator**: lump sum + recast fee → new lower payment vs keeping the payment and finishing early.
 2. **"Cancel PMI" letter generator**: fills a request letter from the PMI timeline (date, balance, original value) to print or email.
@@ -195,3 +267,5 @@ Local preview: any static server pointed at the parent folder works, e.g. `npx s
 10. **Home equity tracker**: enter today's estimated value to see equity, HELOC capacity and the PMI appraisal route.
 11. **Tax-aware prepay vs invest**: optional marginal tax rate and capital-gains assumptions in the optimizer.
 12. **Embeddable widget**: an `<iframe>` version of the payment calculator for real-estate blogs, with a link back (good for SEO).
+
+Items 1–5 and parts of 9–10 are now built (see section 12).

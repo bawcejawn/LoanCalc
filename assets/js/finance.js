@@ -298,8 +298,7 @@ export function refinance({ balance, ratePct, remainingMonths, currentPI, newRat
     // wealth advantage of refinancing after k months: cash kept minus extra debt still owed
     const adv = (cumOld - cumNew) - cashUpfront - (Math.max(bNew, 0) - Math.max(bOld, 0));
     net.push(adv);
-    if (breakEven === null && adv >= 0) breakEven = k;
-    if (breakEven !== null && adv < 0) breakEven = null;
+    if (breakEven === null && adv >= 0) breakEven = k; // first month you're ahead
   }
   const savings = oldPI - newPI;
   return {
@@ -366,3 +365,142 @@ export function projectArm({ principal, months = 360, initialRatePct, fixedMonth
 
 /* ---------- helpers ---------- */
 function fmt0(n) { return '$' + Math.round(n).toLocaleString('en-US'); }
+
+/* ---------- credit score impact (Fannie Mae LLPA grid) ---------- */
+
+export function llpa(score, ltvPct) {
+  const t = RULES.llpa;
+  const col = t.ltvMax.findIndex((m) => ltvPct <= m + 1e-9);
+  const row = t.rows.find(([min]) => score >= min) || t.rows.at(-1);
+  return row[1][col < 0 ? t.ltvMax.length - 1 : col];
+}
+export const CREDIT_BANDS = [[780, '780+'], [760, '760–779'], [740, '740–759'], [720, '720–739'], [700, '700–719'], [680, '680–699'], [660, '660–679'], [640, '640–659'], [620, '620–639']];
+
+/**
+ * Estimated rate/payment for each credit band, anchored on the rate the user was quoted at their own band.
+ * ratePct is the user's rate; score is their band (lower bound).
+ */
+export function creditImpact({ price, loan, ratePct, score, termMonths = 360 }) {
+  const ltv = (loan / price) * 100;
+  const mine = llpa(score, ltv);
+  return CREDIT_BANDS.map(([min, label]) => {
+    const rate = Math.max(0, ratePct + (llpa(min, ltv) - mine) * RULES.pointToRate);
+    const pmiPct = estimatePmiPct(ltv, min);
+    const pi = pmt(loan, rate, termMonths);
+    const pmiMonthly = loan * pmiPct / 1200;
+    const plan = { principal: loan, ratePct: rate, months: termMonths, start: { y: 2026, m: 1 }, homeValue: price, mi: pmiMonthly ? { kind: 'pmi', monthly: pmiMonthly, removal: 'request' } : { kind: 'none' }, extras: {} };
+    const res = amortize(plan, { withExtras: false });
+    return { min, label, rate, pmiPct, pi, pmiMonthly, monthly: pi + pmiMonthly, lifetime: res.totals.interest + res.totals.mi, llpa: llpa(min, ltv), mine: min === score };
+  });
+}
+
+/* ---------- payoff goals, biweekly, recast, cost of waiting ---------- */
+
+/** Extra monthly principal needed to pay the loan off within `targetMonths`. */
+export function extraForPayoff(plan, targetMonths) {
+  const clean = { ...plan, extras: {} };
+  const base = amortize(clean, { withExtras: false });
+  if (base.months <= targetMonths) return 0;
+  let lo = 0, hi = plan.principal;
+  for (let i = 0; i < 50; i++) {
+    const mid = (lo + hi) / 2;
+    if (amortize({ ...clean, extras: { monthly: mid } }).months <= targetMonths) hi = mid; else lo = mid;
+  }
+  return Math.ceil(hi);
+}
+
+/**
+ * Compare monthly, "true" biweekly (26 half-payments a year, interest per period) and the 1/12-extra shortcut.
+ * fee: one-time enrollment fee some servicers/third parties charge; perPayment: fee on each debit.
+ */
+export function biweeklyCompare(plan, { fee = 0, perPayment = 0 } = {}) {
+  const base = amortize({ ...plan, extras: {} }, { withExtras: false });
+  const half = base.payment / 2;
+  const r = plan.ratePct / 100 / 26;
+  let bal = plan.principal, n = 0, interest = 0;
+  while (bal > 0.005 && n < 26 * 60) { const i = bal * r; interest += i; bal -= Math.min(half - i, bal); n++; }
+  const twelfth = amortize({ ...plan, extras: { monthly: base.payment / 12 } });
+  const fees = fee + perPayment * n;
+  return {
+    monthly: { months: base.months, interest: base.totals.interest },
+    biweekly: { months: Math.ceil(n * 12 / 26), interest, fees, saved: base.totals.interest - interest - fees },
+    twelfth: { months: twelfth.months, interest: twelfth.totals.interest, saved: base.totals.interest - twelfth.totals.interest, extra: base.payment / 12 },
+  };
+}
+
+/** A lump sum either shortens the loan (keep payment) or lowers the payment (recast, for a fee). */
+export function recastCompare(plan, { lump, fee = 250 }) {
+  const clean = { ...plan, extras: {} };
+  const base = amortize(clean, { withExtras: false });
+  const keep = amortize({ ...clean, extras: { oneTime: [{ k: 1, amount: lump }] } });
+  const newBal = Math.max(0, plan.principal - lump);
+  const recastPI = pmt(newBal, plan.ratePct, base.months); // same payoff date as today's schedule
+  const rec = amortize({ ...clean, principal: newBal, fixedPI: recastPI }, { withExtras: false });
+  return {
+    base, keep: { months: keep.months, interestSaved: base.totals.interest - keep.totals.interest, payment: base.payment },
+    recast: { payment: recastPI, monthlyDrop: base.payment - recastPI, interestSaved: base.totals.interest - rec.totals.interest - fee, fee },
+  };
+}
+
+/** Savings from starting an extra payment now vs `delayMonths` from now. */
+export function costOfWaiting(plan, monthlyExtra, delayMonths = 60) {
+  const base = amortize({ ...plan, extras: {} }, { withExtras: false }).totals.interest;
+  const now = base - amortize({ ...plan, extras: { monthly: monthlyExtra } }).totals.interest;
+  const later = base - amortize({ ...plan, extras: { monthly: monthlyExtra, monthlyFrom: delayMonths + 1 } }).totals.interest;
+  return { now, later, lost: now - later };
+}
+
+/* ---------- refinance helpers ---------- */
+
+/** Highest new rate at which refinancing still comes out ahead within the stay horizon. */
+export function refiRateTarget(params) {
+  let lo = 0, hi = params.ratePct;
+  if (refinance({ ...params, newRatePct: lo }).netAtStay <= 0) return null;
+  for (let i = 0; i < 40; i++) { const mid = (lo + hi) / 2; if (refinance({ ...params, newRatePct: mid }).netAtStay > 0) lo = mid; else hi = mid; }
+  return Math.floor(lo * 8) / 8; // round down to a quotable 1/8
+}
+
+/** Buying points: each point costs 1% of the loan and cuts the rate by `ratePerPoint`. */
+export function pointsCompare({ loan, ratePct, months, points = [0, 0.5, 1, 2], ratePerPoint = 0.25 }) {
+  const base = pmt(loan, ratePct, months);
+  return points.map((p) => {
+    const rate = ratePct - p * ratePerPoint;
+    const pay = pmt(loan, rate, months);
+    const cost = loan * p / 100;
+    const save = base - pay;
+    return { points: p, rate, cost, payment: pay, monthlySave: save, breakEven: p && save > 0 ? Math.ceil(cost / save) : null };
+  });
+}
+
+/* ---------- equity and insurance ---------- */
+
+export function equityAt(plan, years, appreciationPct = 3) {
+  const rows = amortize({ ...plan }, { withExtras: true }).rows;
+  const k = years * 12;
+  const bal = k <= rows.length ? rows[k - 1].balance : 0;
+  const value = plan.homeValue * Math.pow(1 + appreciationPct / 100, years + (plan.monthsElapsed || 0) / 12);
+  return { years, balance: bal, value, equity: value - bal, ltv: (bal / value) * 100 };
+}
+
+/** Estimated premium savings from a higher deductible, and years without a claim to come out ahead. */
+export function deductibleOptions(premium, deductible) {
+  const steps = RULES.hoiDeductible;
+  const out = [];
+  let keepLo = 1, keepHi = 1;
+  for (const [from, to, lo, hi] of steps) {
+    if (to <= deductible) continue;
+    // a partial first step if the current deductible sits between `from` and `to`
+    const share = deductible > from ? (to - deductible) / (to - from) : 1;
+    keepLo *= 1 - lo * share; keepHi *= 1 - hi * share;
+    const sLo = premium * (1 - keepLo), sHi = premium * (1 - keepHi);
+    out.push({ to, lo: sLo, hi: sHi, extraRisk: to - deductible, breakEvenYears: (to - deductible) / ((sLo + sHi) / 2) });
+  }
+  return out;
+}
+
+export function escrowCheck({ escrowMonthly, taxAnnual, insAnnual }) {
+  const need = (taxAnnual + insAnnual) / 12;
+  const diff = escrowMonthly - need;
+  const status = Math.abs(diff) <= need * RULES.escrowTolerance ? 'ok' : diff > 0 ? 'over' : 'short';
+  return { need, diff, status, yearly: diff * 12 };
+}

@@ -24,12 +24,13 @@ export function loanInputs({ compact = false } = {}) {
     : field({ path: 'buy.downAmt', label: 'Down payment', kind: 'money', slider: true, min: 0, max: Math.max(100000, Math.round(b.price / 2)), step: 1000 })}
   ${field({ path: 'buy.ratePct', label: 'Interest rate', kind: 'pct', slider: true, min: 2, max: 10, step: 0.125, tip: 'Use the rate from a lender quote if you have one. APR includes fees; use the note rate here.' })}
   ${field({ path: 'buy.termYears', label: 'Loan term', kind: 'seg', options: [[10, '10'], [15, '15'], [20, '20'], [25, '25'], [30, '30']] })}
+  <details class="more-opts" ${moreOpen ? 'open' : ''}><summary>More options <span>loan type, taxes, insurance, HOA</span></summary>
   ${field({ path: 'buy.loanType', label: 'Loan type', kind: 'select', options: [['conventional', 'Conventional'], ['fha', 'FHA'], ['va', 'VA'], ['usda', 'USDA'], ['jumbo', 'Jumbo']] })}
   ${isConv ? field({ path: 'buy.credit', label: 'Credit score', kind: 'select', numeric: true, options: [[760, '760+'], [740, '740–759'], [720, '720–739'], [700, '700–719'], [680, '680–699'], [660, '660–679'], [640, '640–659'], [620, '620–639']], tip: 'Used only to estimate PMI. Nothing is checked or stored anywhere but your browser.' }) : ''}
   ${isConv ? field({ path: 'buy.pmiPct', label: 'PMI rate (yearly)', kind: 'pct', placeholder: 'Estimated for you', tip: 'Leave blank to use an estimate from your down payment and credit score. Paste a real quote for accuracy.' }) : ''}
   ${t === 'va' ? field({ path: 'buy.vaSubsequent', kind: 'check', label: 'I have used my VA benefit before' }) + field({ path: 'buy.vaExempt', kind: 'check', label: 'Exempt from the funding fee (e.g. VA disability compensation)' }) : ''}
   ${t === 'fha' || t === 'va' || t === 'usda' ? field({ path: 'buy.financeFee', kind: 'check', label: 'Add the upfront fee to my loan' }) : ''}
-  ${compact ? '' : `
+  ${compact ? '</details>' : `
   <h2>Taxes, insurance and fees</h2>
   ${field({ path: 'buy.taxPct', label: 'Property tax (per year)', kind: 'pct', slider: true, min: 0, max: 3, step: 0.05, tip: 'Percent of home value. Check your county assessor; the US average is around 1%.' })}
   ${field({ path: 'buy.insAnnual', label: 'Home insurance (per year)', kind: 'money' })}
@@ -38,7 +39,7 @@ export function loanInputs({ compact = false } = {}) {
   <div class="f"><span class="lbl">First payment</span><div class="row">
     ${field({ path: 'buy.startM', label: '<span class="sr-only">Month</span>', kind: 'select', numeric: true, options: monthOptions })}
     ${field({ path: 'buy.startY', label: '<span class="sr-only">Year</span>', kind: 'select', numeric: true, options: yearOptions })}
-  </div></div>`}`;
+  </div></div></details>`}`;
 }
 
 function ownInputs(compact) {
@@ -49,6 +50,7 @@ function ownInputs(compact) {
   ${field({ path: 'own.balance', label: 'Current balance', kind: 'money', slider: true, min: 10000, max: 1500000, step: 1000 })}
   ${field({ path: 'own.ratePct', label: 'Interest rate', kind: 'pct', slider: true, min: 2, max: 10, step: 0.125 })}
   ${field({ path: 'own.remainingMonths', label: 'Payments left', kind: 'num', post: 'mo', slider: true, min: 1, max: 480, step: 1, hint: '12 per year left. 300 = 25 years.' })}
+  <details class="more-opts" ${moreOpen ? 'open' : ''}><summary>More options <span>exact payment, PMI, escrow, original loan</span></summary>
   ${field({ path: 'own.monthlyPI', label: 'Principal + interest payment', kind: 'money', placeholder: Math.round(computed).toLocaleString('en-US') + ' (calculated)', tip: 'Shown on your statement. Leave blank to calculate it from balance, rate and payments left.' })}
   <div class="f"><span class="lbl">Next payment due</span><div class="row">
     ${field({ path: 'own.nextM', label: '<span class="sr-only">Month</span>', kind: 'select', numeric: true, options: monthOptions })}
@@ -65,7 +67,7 @@ function ownInputs(compact) {
   ${field({ path: 'own.hoa', label: 'HOA dues (per month)', kind: 'money' })}
   ${field({ path: 'own.miKind', label: 'Mortgage insurance', kind: 'select', options: [['none', 'None'], ['pmi', 'PMI (conventional)'], ['fha', 'FHA MIP'], ['usda', 'USDA annual fee']] })}
   ${o.miKind !== 'none' ? field({ path: 'own.miMonthly', label: 'Mortgage insurance (per month)', kind: 'money' }) : ''}
-  ${o.miKind === 'fha' ? field({ path: 'own.mipLife', kind: 'check', label: 'My MIP lasts for the life of the loan (put less than 10% down)' }) : ''}`}`;
+  ${o.miKind === 'fha' ? field({ path: 'own.mipLife', kind: 'check', label: 'My MIP lasts for the life of the loan (put less than 10% down)' }) : ''}`}</details>`;
 }
 
 export function extrasInputs() {
@@ -92,6 +94,8 @@ export function variant(mutate, { withExtras = true } = {}) {
 
 export function root() { return document.body.dataset.root || './'; }
 
+// remembers whether "More options" is open, so re-renders don't snap it shut
+export let moreOpen = false;
 const REBUILD = new Set(['mode', 'buy.downMode', 'buy.loanType', 'buy.termYears', 'own.miKind', 'own.originalTermYears', 'pmi.removal']);
 /** Render an inputs panel and re-render it when a structural choice changes. */
 export function inputsPanel(container, html, bind, extraRebuild = []) {
@@ -99,6 +103,7 @@ export function inputsPanel(container, html, bind, extraRebuild = []) {
   const render = (focusPath) => {
     container.innerHTML = html();
     bind(container, (path) => { if (rebuildOn.has(path)) render(path); });
+    container.querySelectorAll('details.more-opts').forEach((d) => d.addEventListener('toggle', () => { moreOpen = d.open; }));
     if (focusPath) container.querySelector(`[data-path="${focusPath}"], [data-seg="${focusPath}"][aria-pressed="true"]`)?.focus();
   };
   render();

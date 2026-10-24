@@ -53,7 +53,7 @@ export function mount(el) {
       <ul class="levers" style="margin-top:16px">${items.map((x, i) => `<li><label class="check" style="margin:0"><input type="checkbox" data-pick="${i}" ${x.pick ? 'checked' : ''}> <span><b>${esc(x.name)}</b><br><small style="color:var(--ink-3)">Saved ${new Date(x.at).toLocaleDateString()}</small></span></label>
         <span class="btn-row"><button type="button" class="btn small" data-load="${i}">Open</button><button type="button" class="btn small" data-del="${i}">Delete</button></span></li>`).join('')}</ul>`;
     box.querySelectorAll('[data-pick]').forEach((c) => c.addEventListener('change', () => { const a = list(); a[+c.dataset.pick].pick = c.checked; if (a.filter((x) => x.pick).length > 4) { c.checked = false; a[+c.dataset.pick].pick = false; toast('Compare up to four at a time'); } write(a); draw(); }));
-    box.querySelectorAll('[data-load]').forEach((b) => b.addEventListener('click', () => { replaceState(list()[+b.dataset.load].state); toast('Scenario opened'); location.href = document.body.dataset.root || './'; }));
+    box.querySelectorAll('[data-load]').forEach((b) => b.addEventListener('click', () => { replaceState(list()[+b.dataset.load].state); toast('Scenario opened'); location.href = (document.body.dataset.root || './') + 'mortgage-savings-check/'; }));
     box.querySelectorAll('[data-del]').forEach((b) => b.addEventListener('click', () => { const a = list(); a.splice(+b.dataset.del, 1); write(a); draw(); }));
   };
   el.querySelector('#sc-save').addEventListener('click', () => {

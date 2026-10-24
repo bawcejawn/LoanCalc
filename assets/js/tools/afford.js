@@ -55,7 +55,7 @@ function render(el) {
   el.querySelectorAll('[data-price]').forEach((b) => b.addEventListener('click', () => {
     set('mode', 'buy', { silent: true }); set('buy.price', +b.dataset.price, { silent: true });
     set('buy.downMode', 'amt', { silent: true }); set('buy.downAmt', +state.afford.down, { silent: true }); set('buy.credit', +state.afford.credit);
-    location.href = document.body.dataset.root || './';
+    location.href = (document.body.dataset.root || './') + 'mortgage-payment-calculator/';
   }));
   const b = std.breakdown;
   el.querySelector('#af-break').innerHTML = `<tbody>

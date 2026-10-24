@@ -127,6 +127,6 @@ function render(el) {
     set('mode', 'buy', { silent: true });
     set('buy.loanType', r.t.loanType, { silent: true }); set('buy.downMode', 'amt', { silent: true }); set('buy.downAmt', Math.round(r.downAmt), { silent: true });
     set('buy.ratePct', r.rate, { silent: true }); set('buy.termYears', 30, { silent: true }); set('buy.financeFee', true);
-    location.href = document.body.dataset.root || './';
+    location.href = (document.body.dataset.root || './') + 'mortgage-payment-calculator/';
   }));
 }

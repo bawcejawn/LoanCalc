@@ -101,3 +101,61 @@ test('optimizer ranks and compares investing', () => {
   assert.equal(F.optimize(plan(), { monthlyBudget: 200, investReturnPct: 12 }).invest.winner, 'invest');
   assert.equal(F.optimize(plan(), { monthlyBudget: 200, investReturnPct: 2 }).invest.winner, 'prepay');
 });
+
+test('LLPA lookup and credit impact', () => {
+  assert.equal(F.llpa(785, 90), 0.25);
+  assert.equal(F.llpa(745, 80), 0.875);
+  assert.equal(F.llpa(600, 97), 1.75);
+  const rows = F.creditImpact({ price: 400000, loan: 360000, ratePct: 6.5, score: 700 });
+  const mine = rows.find((r) => r.mine);
+  near(mine.rate, 6.5, 1e-9);
+  const top = rows[0];
+  assert.ok(top.rate < mine.rate && top.monthly < mine.monthly, 'better score -> lower cost');
+  near(mine.rate - top.rate, (1.25 - 0.25) * 0.2, 1e-9);
+});
+
+test('extra needed to hit a payoff goal', () => {
+  const p = plan();
+  const x = F.extraForPayoff(p, 180);
+  assert.ok(F.amortize({ ...p, extras: { monthly: x } }).months <= 180);
+  assert.ok(F.amortize({ ...p, extras: { monthly: x - 5 } }).months > 180);
+  assert.equal(F.extraForPayoff(p, 400), 0);
+});
+
+test('biweekly, recast and cost of waiting', () => {
+  const b = F.biweeklyCompare(plan(), { fee: 300 });
+  assert.ok(b.biweekly.months < b.monthly.months - 40);
+  assert.ok(b.biweekly.saved > 0 && b.twelfth.saved > 0);
+  const r = F.recastCompare(plan(), { lump: 30000, fee: 250 });
+  assert.ok(r.recast.payment < r.keep.payment);
+  assert.ok(r.keep.interestSaved > r.recast.interestSaved, 'keeping the payment saves more interest');
+  const w = F.costOfWaiting(plan(), 200, 60);
+  assert.ok(w.now > w.later && w.lost > 10000);
+});
+
+test('refi rate target and points', () => {
+  const base = { balance: 300000, ratePct: 7.5, remainingMonths: 336, newTermMonths: 360, costs: 6000, stayYears: 5 };
+  const t = F.refiRateTarget(base);
+  assert.ok(t > 5 && t < 7.5, `target ${t}`);
+  assert.ok(F.refinance({ ...base, newRatePct: t }).netAtStay > 0);
+  assert.ok(F.refinance({ ...base, newRatePct: t + 0.25 }).netAtStay <= 0);
+  const pts = F.pointsCompare({ loan: 400000, ratePct: 6.5, months: 360 });
+  assert.equal(pts[0].breakEven, null);
+  assert.ok(pts[2].breakEven > 40 && pts[2].breakEven < 80, `1pt BE ${pts[2].breakEven}`);
+});
+
+test('insurance deductible and escrow checks', () => {
+  const d = F.deductibleOptions(2400, 1000);
+  assert.equal(d[0].to, 2500);
+  near(d[0].hi, 2400 * 0.24, 0.01);
+  assert.ok(d[1].hi > d[0].hi && d[1].to === 5000);
+  assert.equal(F.deductibleOptions(2400, 5000).length, 0);
+  assert.equal(F.escrowCheck({ escrowMonthly: 700, taxAnnual: 6000, insAnnual: 1800 }).status, 'over');
+  assert.equal(F.escrowCheck({ escrowMonthly: 650, taxAnnual: 6000, insAnnual: 1800 }).status, 'ok');
+});
+
+test('equity projection', () => {
+  const e = F.equityAt(plan(), 10, 3);
+  near(e.value, 375000 * Math.pow(1.03, 10), 1);
+  assert.ok(e.equity > 375000 * Math.pow(1.03, 10) - 300000);
+});

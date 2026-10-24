@@ -12,14 +12,17 @@ export const DEFAULTS = {
   buy: { price: 450000, downMode: 'pct', downPct: 10, downAmt: 45000, ratePct: 6.25, termYears: 30, loanType: 'conventional', credit: 740,
     taxPct: 1.1, insAnnual: 1900, hoa: 0, pmiPct: '', vaSubsequent: false, vaExempt: false, financeFee: true, closingPct: 3, startY: firstPay.y, startM: firstPay.m },
   own: { originalAmount: 380000, originalValue: 425000, originalTermYears: 30, balance: 362000, ratePct: 6.875, remainingMonths: 324, monthlyPI: '',
-    taxMonthly: 420, insMonthly: 160, hoa: 0, miKind: 'pmi', miMonthly: 175, mipLife: true, nextY: firstPay.y, nextM: firstPay.m },
+    taxMonthly: 420, insMonthly: 160, hoa: 0, miKind: 'pmi', miMonthly: 175, mipLife: true, nextY: firstPay.y, nextM: firstPay.m, escrowMonthly: '', taxBillAnnual: '', credit: 740 },
   extras: { monthly: 0, annual: 0, annualMonth: 12, oneTimeAmt: 0, oneTimeK: 12, biweekly: false },
   pmi: { removal: 'request', currentValue: '', targetYears: 3 },
   refi: { newRatePct: 5.75, newTermYears: 30, costs: 6500, pointsPct: 0, roll: false, stayYears: 7 },
   afford: { income: 125000, debts: 650, down: 60000, credit: 740 },
   compare: { military: false, vaSubsequent: false, rural: false, usdaIncomeOk: true, adjFha: -0.25, adjVa: -0.375, adjUsda: -0.25, adjJumbo: 0.25, adjArm: -0.5 },
   arm: { initialRatePct: 5.625, fixedYears: 5, adjustEvery: 6, caps: '2/1/5', marginPct: 2.75, indexPct: 4.3, fixedRatePct: 6.25, holdYears: 7 },
-  opt: { budget: 200, lump: 5000, investPct: 6 },
+  opt: { budget: 200, lump: 5000, investPct: 6, goalYears: 15, recastFee: 250, biweeklyFee: 0, delayYears: 5 },
+  goals: { appreciationPct: 3 },
+  hoi: { loaded: false, premium: '', deductible: '', windPct: '', dwelling: '', otherStructures: '', personalProperty: '', lossOfUse: '', liability: '', renewalM: '', renewalY: '' },
+  le: { loaded: false, price: 0, loanAmount: 0, ratePct: 0, termYears: 0, monthlyPI: 0, escrow: 0, closingCosts: 0, cashToClose: 0, pointsPct: 0 },
 };
 
 function merge(base, over) {

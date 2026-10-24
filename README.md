@@ -6,7 +6,9 @@ Free, private mortgage planning tools that run entirely in your browser. No sign
 
 | Tool | What it answers |
 |---|---|
-| [Payment calculator](https://bawcejawn.github.io/LoanCalc/) | Full PITI with PMI/MIP/VA/USDA fees, cash to close, and the specific changes that lower your payment |
+| [Start](https://bawcejawn.github.io/LoanCalc/) | A few questions, then your payment, your 3 best moves and the tools that fit |
+| [My savings](https://bawcejawn.github.io/LoanCalc/mortgage-savings-check/) | Every way to save, ranked: PMI, refinance, credit, insurance, escrow, extra payments |
+| [Payment calculator](https://bawcejawn.github.io/LoanCalc/mortgage-payment-calculator/) | Full PITI with PMI/MIP/VA/USDA fees, cash to close, and the specific changes that lower your payment |
 | [Amortization schedule](https://bawcejawn.github.io/LoanCalc/amortization-schedule-calculator/) | Every payment, charts, milestones, extra/biweekly/lump-sum payments, CSV export |
 | [PMI removal](https://bawcejawn.github.io/LoanCalc/pmi-removal-calculator/) | Earliest month PMI can end by each route, cost of waiting, extra needed to hit your date |
 | [Extra payment optimizer](https://bawcejawn.github.io/LoanCalc/extra-payment-calculator/) | Which prepayment strategy saves most; prepay vs invest |
@@ -14,7 +16,8 @@ Free, private mortgage planning tools that run entirely in your browser. No sign
 | [Affordability](https://bawcejawn.github.io/LoanCalc/home-affordability-calculator/) | Comfortable, standard and stretch budgets |
 | [Compare loan types](https://bawcejawn.github.io/LoanCalc/fha-vs-conventional-calculator/) | Conventional, FHA, VA, USDA, jumbo and ARM side by side with 2026 rules |
 | [ARM projector](https://bawcejawn.github.io/LoanCalc/arm-calculator/) | Payment paths after the fixed period vs a fixed rate |
-| [Statement reader](https://bawcejawn.github.io/LoanCalc/mortgage-statement-reader/) | Auto-fill your current loan from a PDF, read locally |
+| [Credit score impact](https://bawcejawn.github.io/LoanCalc/credit-score-mortgage-rate-calculator/) | Rate, PMI and payment at every score band (no credit check) |
+| [Document reader](https://bawcejawn.github.io/LoanCalc/mortgage-statement-reader/) | Auto-fill from a mortgage statement, insurance declarations page or Loan Estimate, read locally |
 | [Saved scenarios](https://bawcejawn.github.io/LoanCalc/saved-scenarios/) | Save, compare up to four, share by link |
 
 ## Develop

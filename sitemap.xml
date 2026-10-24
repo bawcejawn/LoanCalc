@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url><loc>https://bawcejawn.github.io/LoanCalc/</loc><lastmod>2026-10-23</lastmod></url>
+  <url><loc>https://bawcejawn.github.io/LoanCalc/mortgage-payment-calculator/</loc><lastmod>2026-10-23</lastmod></url>
   <url><loc>https://bawcejawn.github.io/LoanCalc/amortization-schedule-calculator/</loc><lastmod>2026-10-23</lastmod></url>
   <url><loc>https://bawcejawn.github.io/LoanCalc/pmi-removal-calculator/</loc><lastmod>2026-10-23</lastmod></url>
   <url><loc>https://bawcejawn.github.io/LoanCalc/extra-payment-calculator/</loc><lastmod>2026-10-23</lastmod></url>
@@ -10,6 +11,9 @@
   <url><loc>https://bawcejawn.github.io/LoanCalc/arm-calculator/</loc><lastmod>2026-10-23</lastmod></url>
   <url><loc>https://bawcejawn.github.io/LoanCalc/mortgage-statement-reader/</loc><lastmod>2026-10-23</lastmod></url>
   <url><loc>https://bawcejawn.github.io/LoanCalc/saved-scenarios/</loc><lastmod>2026-10-23</lastmod></url>
+  <url><loc>https://bawcejawn.github.io/LoanCalc/mortgage-savings-check/</loc><lastmod>2026-10-23</lastmod></url>
+  <url><loc>https://bawcejawn.github.io/LoanCalc/credit-score-mortgage-rate-calculator/</loc><lastmod>2026-10-23</lastmod></url>
+  <url><loc>https://bawcejawn.github.io/LoanCalc/guides/lower-homeowners-insurance/</loc><lastmod>2026-10-23</lastmod></url>
   <url><loc>https://bawcejawn.github.io/LoanCalc/guides/how-to-remove-pmi/</loc><lastmod>2026-10-23</lastmod></url>
   <url><loc>https://bawcejawn.github.io/LoanCalc/guides/refinance-break-even/</loc><lastmod>2026-10-23</lastmod></url>
   <url><loc>https://bawcejawn.github.io/LoanCalc/guides/fha-vs-conventional-2026/</loc><lastmod>2026-10-23</lastmod></url>

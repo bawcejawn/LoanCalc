@@ -10,15 +10,31 @@ const BASE = 'https://bawcejawn.github.io/LoanCalc/';
 const UPDATED = '2026-10-23';
 
 const NAV = [
-  ['Buying', [['', 'Payment calculator', 'PITI'], ['home-affordability-calculator/', 'Affordability'], ['fha-vs-conventional-calculator/', 'Compare loan types'], ['arm-calculator/', 'ARM projector']]],
-  ['Owning', [['amortization-schedule-calculator/', 'Amortization', 'Schedule'], ['pmi-removal-calculator/', 'PMI removal'], ['extra-payment-calculator/', 'Extra payments', 'Optimizer'], ['refinance-calculator/', 'Refinance']]],
-  ['Your data', [['mortgage-statement-reader/', 'Read a statement', 'PDF'], ['saved-scenarios/', 'Saved scenarios']]],
+  ['Start here', [['mortgage-savings-check/', 'My savings'], ['mortgage-statement-reader/', 'Upload a document']]],
+  ['Buying', [['mortgage-payment-calculator/', 'Monthly payment'], ['home-affordability-calculator/', 'Affordability'], ['fha-vs-conventional-calculator/', 'Compare loan types'], ['credit-score-mortgage-rate-calculator/', 'Credit score impact'], ['arm-calculator/', 'ARM projector']]],
+  ['Owning', [['amortization-schedule-calculator/', 'Payoff schedule'], ['pmi-removal-calculator/', 'Remove PMI'], ['extra-payment-calculator/', 'Pay off faster'], ['refinance-calculator/', 'Refinance check']]],
+  ['Your data', [['saved-scenarios/', 'Saved plans']]],
 ];
 
 const faq = (items) => items;
 const PAGES = [
   {
-    path: '', tool: 'payment',
+    path: '', tool: 'start',
+    title: 'MortgageForge: Free Mortgage Calculator & Savings Planner',
+    description: 'Answer a few questions and see your mortgage payment and the biggest ways to save: PMI removal, extra payments, refinancing, insurance and more. Free, private, no sign-up.',
+    h1: 'Find the savings in your mortgage',
+    intro: 'A few quick questions, then only the tools that matter to you. Everything stays in your browser.',
+    body: `<h2>What MortgageForge does</h2>
+      <p>MortgageForge is a free set of mortgage calculators that work together: monthly payment with taxes and PMI, a full payoff schedule, PMI removal dates, extra-payment and payoff-goal planning, refinance break-even, loan type comparison, affordability, credit score impact, and a reader for your statement, insurance policy or Loan Estimate.</p>
+      <p>Instead of showing everything at once, it starts with what you want to do and adds tools as you go. Your numbers carry from one tool to the next.</p>`,
+    faq: faq([
+      ['Is MortgageForge free?', 'Yes. Every calculator is free with no account.'],
+      ['Where are my numbers stored?', 'Only in your own browser. Nothing is sent to a server.'],
+      ['Can I see all the tools at once?', 'Yes. Open "All tools" in the menu at any time.'],
+    ]),
+  },
+  {
+    path: 'mortgage-payment-calculator/', tool: 'payment',
     title: 'Mortgage Calculator with Taxes, Insurance & PMI | MortgageForge',
     description: 'Free mortgage payment calculator with property taxes, insurance, HOA and PMI. See your full PITI payment, closing cash and the exact changes that lower it. Private, no sign-up.',
     h1: 'Mortgage payment calculator',
@@ -152,17 +168,22 @@ const PAGES = [
   },
   {
     path: 'mortgage-statement-reader/', tool: 'import',
-    title: 'Mortgage Statement Reader: Auto-Fill From Your PDF | MortgageForge',
-    description: 'Drop in your mortgage statement PDF to fill in balance, rate, payment and escrow automatically. Read entirely in your browser; the file is never uploaded.',
-    h1: 'Read my mortgage statement',
-    intro: 'Fill in your current loan from a PDF statement in seconds. The file is read inside this tab and never leaves your device.',
-    body: `<h2>How it works</h2>
-      <p>The page uses PDF.js, the same open-source reader built into Firefox, running locally in your browser to pull out text. It looks for common statement labels such as "Unpaid principal balance", "Interest rate", "Principal", "Interest", "Escrow" and "Maturity date", then shows what it found so you can check it before anything is used.</p>
+    title: 'Upload Your Mortgage Statement, Insurance Policy or Loan Estimate | MortgageForge',
+    description: 'Drop in a mortgage statement, homeowners insurance declarations page, or Loan Estimate PDF to auto-fill your numbers and find savings. Read entirely in your browser; files are never uploaded.',
+    h1: 'Upload a document',
+    intro: 'Fill in your loan, insurance or quote from a PDF in seconds, then see where you can save. Files are read inside this tab and never leave your device.',
+    body: `<h2>What each document tells us</h2>
+      <p><strong>Mortgage statement:</strong> balance, rate, payment, escrow, mortgage insurance and payoff date. Used to check PMI cancellation, refinancing, extra payments and whether your escrow is collecting too much.</p>
+      <p><strong>Homeowners insurance declarations page:</strong> premium, deductibles, coverage limits and renewal date. Used to estimate deductible savings, remind you to shop before renewal and check escrow.</p>
+      <p><strong>Loan Estimate or Closing Disclosure:</strong> loan amount, rate, points, closing costs and cash to close. Used to test whether points pay off and to compare offers.</p>
+      <h2>How it works</h2>
+      <p>The page uses PDF.js, the open-source reader built into Firefox, running locally in your browser. It looks for the standard labels on each document, shows what it found with a confidence note, and waits for you to confirm before anything is used.</p>
       <h2>Privacy</h2>
-      <p>There is no server: the file isn't uploaded, stored or logged. Only the numbers you confirm are saved, in your own browser, so the other tools can use them.</p>`,
+      <p>There is no server: files aren't uploaded, stored or logged. Only the numbers you confirm are saved, in your own browser. We never ask for account numbers or your Social Security number.</p>`,
     faq: faq([
-      ['Why weren\'t all values found?', 'Every servicer formats statements differently. Anything not found is left for you to fill in, and you can paste statement text instead.'],
+      ['Why weren\'t all values found?', 'Every servicer and insurer formats documents differently. Anything not found is left for you to fill in, and you can paste the text instead.'],
       ['Does it work with photos?', 'Photos and scans contain no text layer, so the page shows the image beside the form for you to type values in.'],
+      ['Can you check my credit too?', 'No. A credit check needs your SSN, written consent and a licensed bureau account, and we don\'t collect personal identifiers. Pick your score range in the credit score tool instead.'],
     ]),
   },
   {
@@ -172,6 +193,51 @@ const PAGES = [
     h1: 'Saved scenarios',
     intro: 'Save versions of your plan, compare up to four side by side, and share one with a link. No account needed.',
     body: `<h2>Sharing without an account</h2><p>A share link packs the scenario's numbers into the link itself, so the person who opens it sees exactly what you see. Nothing is stored on a server.</p>`,
+    faq: [],
+  },
+  {
+    path: 'mortgage-savings-check/', tool: 'savings',
+    title: 'Mortgage Savings Check: Every Way to Save on Your Home Loan | MortgageForge',
+    description: 'One page that finds every way to save on your mortgage: PMI removal, extra payments, payoff goals, refinancing, credit score, homeowners insurance and escrow. Ranked by dollars, private, free.',
+    h1: 'Mortgage savings check',
+    intro: 'Every way to save on your mortgage, ranked by how much each is worth, with the next step for each one.',
+    body: `<h2>What it checks</h2>
+      <p>The savings check runs your loan through every tool on the site at once: whether you can cancel PMI now or soon, which extra-payment approach saves the most, how much a month makes you mortgage-free by your goal, whether a refinance pays off for the years you'll stay (and the rate that would make it pay), what a higher credit score is worth, and, if you add your insurance declarations page, whether a higher deductible or a renewal quote could cut your premium and whether your escrow is collecting too much.</p>
+      <h2>Why the savings don't simply add up</h2>
+      <p>Some moves overlap. Extra payments also end PMI sooner; refinancing changes what extra payments save. Each item shows its own effect so you can pick the ones that fit, then see them together in the amortization schedule.</p>`,
+    faq: faq([
+      ['Is this financial advice?', 'No. It is a planning tool that shows the math. Confirm terms with your servicer, lender or insurer before acting.'],
+      ['Do you pull my credit?', 'Never. You choose your score range; nothing is sent anywhere.'],
+      ['How do I get my insurance details in?', 'Upload your homeowners insurance declarations page on the document page. It is read in your browser.'],
+    ]),
+  },
+  {
+    path: 'credit-score-mortgage-rate-calculator/', tool: 'credit',
+    title: 'Credit Score Mortgage Rate Calculator: What Your Score Costs | MortgageForge',
+    description: 'See how your credit score changes your mortgage rate, PMI and monthly payment, band by band, using Fannie Mae\'s 2026 pricing grid. No credit check, no sign-up.',
+    h1: 'What your credit score costs you',
+    intro: 'Your rate, PMI and payment at every credit score band, estimated from Fannie Mae\'s pricing grid. No credit check.',
+    body: `<h2>How credit score changes a mortgage rate</h2>
+      <p>Fannie Mae and Freddie Mac charge loan-level price adjustments based on credit score and loan-to-value. Lenders pass these on as a higher rate or upfront points. The grid used here is Fannie Mae's matrix updated September 30, 2026, for purchase loans over 15 years. Mortgage insurers also price PMI by credit score, so a lower score costs twice when you put less than 20% down.</p>
+      <h2>How the estimate works</h2>
+      <p>Enter the rate you were quoted for your current score. Each other band's rate is your rate plus the difference in price adjustment, converted at about 0.2 points of rate per point of price. It's a comparison between bands, not a quote.</p>`,
+    faq: faq([
+      ['What credit score do I need for the best mortgage rate?', 'On conventional loans, 780 and above gets the smallest price adjustments. The jump between bands is largest at the lower end.'],
+      ['Does checking my rate hurt my score?', 'Pre-qualification with a soft check does not. A full application uses a hard inquiry; multiple mortgage inquiries within a short shopping window count as one.'],
+      ['Why doesn\'t this site check my credit?', 'A credit check requires your SSN, written consent and a licensed bureau relationship, and the data would have to be stored and protected. MortgageForge keeps everything on your device instead.'],
+    ]),
+  },
+  {
+    path: 'guides/lower-homeowners-insurance/', tool: '', guide: true,
+    title: 'How to Lower Homeowners Insurance (and Your Mortgage Payment) | MortgageForge',
+    description: 'Practical ways to cut homeowners insurance: deductibles, shopping at renewal, discounts, coverage checks, and making sure your escrow follows the change.',
+    h1: 'How to lower your homeowners insurance',
+    intro: 'Insurance is often the easiest part of a mortgage payment to change. Here is where the savings usually are.',
+    body: `<h2>1. Shop 30–45 days before renewal</h2><p>Prices for the same coverage vary widely between insurers. Get two or three quotes using your declarations page so the coverage matches line for line.</p>
+      <h2>2. Raise the deductible if you have the savings</h2><p>The Insurance Information Institute estimates raising a deductible from $500 to $1,000 can cut premiums by up to 25%. Only do it if you could pay the higher deductible from savings. The <a href="../../mortgage-savings-check/">savings check</a> estimates how many claim-free years it takes to come out ahead.</p>
+      <h2>3. Ask for every discount</h2><p>Bundling with auto, claims-free, new roof, monitored alarms, water-leak sensors, and paperless or autopay are common.</p>
+      <h2>4. Check coverage, don't just cut it</h2><p>Dwelling coverage should match the cost to rebuild, not the market value or the loan balance. Too little leaves you exposed; your lender also sets a minimum.</p>
+      <h2>5. Tell your servicer</h2><p>If insurance is paid from escrow, send the new policy to your servicer and ask for an escrow analysis so your monthly payment reflects the lower premium.</p>`,
     faq: [],
   },
   // Guides (content pages for search and AdSense review)
@@ -242,8 +308,7 @@ function page(p) {
   if (p.faq.length) ld.push({ '@context': 'https://schema.org', '@type': 'FAQPage', mainEntity: p.faq.map(([q, a]) => ({ '@type': 'Question', name: q, acceptedAnswer: { '@type': 'Answer', text: strip(a) } })) });
   const fix = (html) => html.replace(/href="(?!https?:|\.\.\/|#|mailto:)([^"]*)"/g, (m, h) => `href="${root}${h}"`);
   const nav = NAV.map(([g, links]) => `<h2>${g}</h2>${links.map(([href, label, small]) => `<a data-nav href="${root}${href}"${href === p.path ? ' aria-current="page"' : ''}>${label}${small ? ` <small>${small}</small>` : ''}</a>`).join('')}`).join('')
-    + `<h2>Guides</h2><a href="${root}guides/how-to-remove-pmi/">How to remove PMI</a><a href="${root}guides/refinance-break-even/">Refinance break-even</a><a href="${root}guides/fha-vs-conventional-2026/">FHA vs conventional</a>`
-    + `<p class="privacy">Private by design: everything runs in your browser. Nothing you type or upload is sent anywhere.</p>`;
+    + `<h2>Guides</h2><a href="${root}guides/how-to-remove-pmi/">How to remove PMI</a><a href="${root}guides/lower-homeowners-insurance/">Lower home insurance</a><a href="${root}guides/refinance-break-even/">Refinance break-even</a><a href="${root}guides/fha-vs-conventional-2026/">FHA vs conventional</a>`;
   return `<!doctype html>
 <html lang="en">
 <head>
@@ -281,7 +346,7 @@ function page(p) {
   <article class="article">${fix(p.body)}${p.faq.length ? `<h2>Questions</h2>${p.faq.map(([q, a]) => `<details><summary>${q}</summary><p>${fix(a)}</p></details>`).join('')}` : ''}
     <div class="slot" data-slot="article"></div>
   </article>
-  <footer class="foot"><span>© ${UPDATED.slice(0, 4)} MortgageForge. Estimates for planning, not financial advice.</span><a href="${root}privacy/">Privacy</a><a href="https://github.com/bawcejawn/LoanCalc">Source code</a><span>Program rules last reviewed ${UPDATED.slice(0, 7)}.</span><span id="tip"></span></footer>
+  <footer class="foot"><span>© ${UPDATED.slice(0, 4)} MortgageForge. Estimates for planning, not financial advice.</span><a href="${root}privacy/">Privacy</a><a href="https://github.com/bawcejawn/LoanCalc">Source code</a><span>Private by design: everything runs in your browser.</span><span>Program rules last reviewed ${UPDATED.slice(0, 7)}.</span><span id="tip"></span></footer>
 </main>
 </div>
 <script src="${root}assets/vendor/chart.umd.min.js" defer></script>

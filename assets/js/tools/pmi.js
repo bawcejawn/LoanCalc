@@ -3,11 +3,13 @@ import { state, derive, bindFields, field, $0, ym, dateAt, dur, chart, css, base
 import * as F from '../finance.js';
 import { RULES } from '../config.js';
 import { modeSwitch, loanInputs, inputsPanel, hasExtras, root } from './shared.js';
+import { pmiLetter, reminder } from './letters.js';
 
 export function mount(el) {
   el.innerHTML = `<form class="inputs" aria-label="PMI inputs" onsubmit="return false"></form>
   <div class="results">
     <section class="sheet"><h2>When your mortgage insurance can end</h2><div id="pm-body"></div></section>
+    <section class="sheet" id="pm-actions-wrap"><h2>Make the request</h2><div id="pm-actions"></div></section>
     <section class="sheet" id="pm-chart-wrap"><h2>Loan-to-value over time</h2><div class="chart-box"><canvas id="pm-ltv" role="img" aria-label="Loan-to-value by month with 80 and 78 percent lines"></canvas></div></section>
     <section class="sheet"><h2>How removal works for your loan type</h2><div id="pm-rules"></div></section>
     <div class="slot" data-slot="results"></div>
@@ -30,6 +32,7 @@ function render(el) {
   const chartWrap = el.querySelector('#pm-chart-wrap');
 
   if (plan.mi.kind !== 'pmi') {
+    el.querySelector('#pm-actions-wrap').hidden = true;
     chartWrap.hidden = plan.mi.kind === 'none';
     if (plan.mi.kind === 'none') {
       body.innerHTML = `<div class="good">${info.loanType === 'va' ? 'VA loans have no monthly mortgage insurance. You pay a one-time funding fee instead.' : 'This loan has no mortgage insurance at 80% loan-to-value or below.'}</div>`;
@@ -49,6 +52,7 @@ function render(el) {
   }
 
   chartWrap.hidden = false;
+  el.querySelector('#pm-actions-wrap').hidden = false;
   const cur = +state.pmi.currentValue || 0;
   const t = F.pmiTimeline(plan, cur);
   const monthly = plan.mi.monthly;
@@ -56,8 +60,9 @@ function render(el) {
   const items = [];
   const now = plan.principal / plan.homeValue * 100;
   items.push({ k: 1, when: 'Today', what: `Loan-to-value is ${pct(now, 1)} of the original value. PMI is ${$0(monthly)} a month.`, done: true });
-  if (t.request80Scheduled) items.push({ k: t.request80Scheduled, what: 'Ask to cancel at 80% on your regular schedule', note: 'You need a written request, a good payment history, and possibly proof the value has not dropped.' });
-  if (hasExtras() && t.request80Actual && t.request80Actual !== t.request80Scheduled) items.push({ k: t.request80Actual, what: 'Ask to cancel at 80% with your extra payments', note: 'Extra payments move this date. They do not move the automatic date below, so you must ask.' });
+  if (t.request80Scheduled === 0) items.push({ k: 1, when: 'Now', what: 'Ask to cancel now: your balance is already at or below 80% of the original value', note: 'You need a written request, a good payment history, and possibly proof the value has not dropped. Use the letter below.' });
+  else if (t.request80Scheduled) items.push({ k: t.request80Scheduled, what: 'Ask to cancel at 80% on your regular schedule', note: 'You need a written request, a good payment history, and possibly proof the value has not dropped.' });
+  if (hasExtras() && t.request80Actual > 1 && t.request80Actual !== t.request80Scheduled) items.push({ k: t.request80Actual, what: 'Ask to cancel at 80% with your extra payments', note: 'Extra payments move this date. They do not move the automatic date below, so you must ask.' });
   if (t.appraisal) items.push({ k: t.appraisal.k, what: `Ask to cancel with a new appraisal (${t.appraisal.ltv}% of today's value)`, note: `Many servicers follow Fannie Mae's rule: at least ${t.appraisal.minYears} years of payments and ${t.appraisal.ltv}% LTV of current value. You usually pay for the appraisal (about $400–$700).` });
   if (t.auto78) items.push({ k: Math.min(t.auto78, t.midpoint), what: t.auto78 <= t.midpoint ? 'Automatic cancellation at 78%' : 'Final termination at the loan midpoint', note: 'Required by the Homeowners Protection Act if you are current on payments. Based on the original schedule only.' });
   const live = items.filter((i) => !i.done);
@@ -73,6 +78,16 @@ function render(el) {
       <div class="stat"><dt>You keep</dt><dd class="keep">${$0(paid(auto) - paid(best))}</dd></div>
     </dl>${target(plan)}`;
   ltvChart(el, plan, cur);
+
+  const k = Math.min(t.request80Actual ?? Infinity, t.request80Scheduled ?? Infinity);
+  const eligibleDate = isFinite(k) && k > 1 ? dateAt(plan, k) : null;
+  el.querySelector('#pm-actions').innerHTML = `<ul class="levers">
+    <li><b>Send a written request</b><span class="amt cost">${eligibleDate ? ym(eligibleDate) : 'Now'}</span><p>Download a ready-to-edit letter citing the Homeowners Protection Act with your balance and original value filled in. Send it to the correspondence address on your statement, and keep a copy.</p>
+      <button type="button" class="btn small" id="pm-letter">Download request letter</button></li>
+    ${eligibleDate ? `<li><b>Set a reminder for the 80% date</b><span class="amt cost">${ym(eligibleDate)}</span><p>A calendar reminder for the month you can first ask, so it doesn't slip by.</p><button type="button" class="btn small" id="pm-remind">Add to calendar</button></li>` : ''}
+    <li><b>Ask what your servicer needs</b><span class="amt cost">Before you pay for anything</span><p>Call and ask: do you require an appraisal or broker price opinion, who orders it, what it costs, and is there a seasoning requirement for value-based removal?</p></li></ul>`;
+  el.querySelector('#pm-letter').addEventListener('click', () => pmiLetter({ balance: plan.principal, originalValue: plan.homeValue, ltv: plan.principal / plan.homeValue * 100, eligibleDate }));
+  el.querySelector('#pm-remind')?.addEventListener('click', () => reminder({ title: 'Request PMI cancellation (80% LTV reached)', description: 'Send your PMI cancellation request letter to your mortgage servicer.', date: new Date(eligibleDate.y, eligibleDate.m - 1, 1), filename: 'pmi-80-percent-reminder.ics' }));
 }
 
 function target(plan) {

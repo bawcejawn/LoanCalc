@@ -59,6 +59,64 @@ export function parseStatement(text) {
   return out;
 }
 
+/* ---------- other documents ---------- */
+
+function runRules(rules, text) {
+  const t = text.replace(/ /g, ' ').replace(/[ \t]+/g, ' ');
+  const out = {};
+  for (const [key, list] of Object.entries(rules)) {
+    for (const [src, conf, kind] of list) {
+      const m = t.match(new RegExp(src, 'i'));
+      if (!m) continue;
+      const raw = m[1];
+      const value = kind === 'date' ? parseDate(raw) : kind === 'text' ? raw.trim() : num(raw);
+      if (value === null || value === '' || (typeof value === 'number' && !(value > 0))) continue;
+      out[key] = { value, confidence: conf };
+      break;
+    }
+  }
+  return out;
+}
+
+// Homeowners insurance declarations page (HO-3 style). Labels vary by carrier, so each field tries several.
+const HOI_RULES = {
+  premium: [[`total\\s+(?:annual\\s+)?(?:policy\\s+)?premium${GAP}${MONEY}`, 3], [`annual\\s+premium${GAP}${MONEY}`, 3], [`policy\\s+premium${GAP}${MONEY}`, 2], [`\\bpremium${GAP}${MONEY}`, 1]],
+  dwelling: [[`(?:coverage\\s+a\\b|cov\\.?\\s*a\\b)[^$\\d]{0,30}?${MONEY}`, 3], [`\\bdwelling(?:\\s+coverage)?${GAP}${MONEY}`, 2]],
+  otherStructures: [[`(?:coverage\\s+b\\b)[^$\\d]{0,30}?${MONEY}`, 3], [`other\\s+structures${GAP}${MONEY}`, 2]],
+  personalProperty: [[`(?:coverage\\s+c\\b)[^$\\d]{0,30}?${MONEY}`, 3], [`personal\\s+property${GAP}${MONEY}`, 2]],
+  lossOfUse: [[`(?:coverage\\s+d\\b)[^$\\d]{0,30}?${MONEY}`, 3], [`loss\\s+of\\s+use${GAP}${MONEY}`, 2]],
+  liability: [[`(?:coverage\\s+e\\b)[^$\\d]{0,30}?${MONEY}`, 3], [`personal\\s+liability${GAP}${MONEY}`, 2]],
+  deductible: [[`all\\s+(?:other\\s+)?perils?(?:\\s+\\(?aop\\)?)?\\s+deductible${GAP}${MONEY}`, 3], [`\\baop\\b[^$\\d]{0,20}?${MONEY}`, 2], [`deductible${GAP}${MONEY}`, 1]],
+  windPct: [[String.raw`(?:wind|hail|hurricane|named\s+storm)[^%\n]{0,50}?(\d{1,2}(?:\.\d+)?)\s?%`, 2]],
+  expires: [[String.raw`(?:policy\s+period|effective)[^\n]{0,60}?(?:to|through|thru|-)\s*` + DATE, 3, 'date'], [String.raw`expir(?:es|ation)(?:\s+date)?[^\dA-Za-z]{0,12}` + DATE, 3, 'date']],
+};
+
+// CFPB Loan Estimate / Closing Disclosure (standard form labels).
+const LE_RULES = {
+  price: [[`sale\\s+price${GAP}${MONEY}`, 3], [`(?:appraised|estimated)\\s+(?:prop\\.?|property)\\s+value${GAP}${MONEY}`, 2]],
+  loanAmount: [[`loan\\s+amount${GAP}${MONEY}`, 3]],
+  ratePct: [[String.raw`interest\s+rate[^\d]{0,20}?(\d{1,2}(?:\.\d{1,5})?)\s?%`, 3]],
+  termYears: [[String.raw`loan\s+term[^\d]{0,10}(\d{1,2})\s*(?:yr|year)`, 3]],
+  monthlyPI: [[`(?:monthly\\s+)?principal\\s*(?:&|and)\\s*interest${GAP}${MONEY}`, 3]],
+  escrow: [[`estimated\\s+escrow${GAP}${MONEY}`, 2]],
+  totalMonthly: [[`estimated\\s+total\\s+monthly\\s+payment${GAP}${MONEY}`, 3]],
+  closingCosts: [[`(?:estimated\\s+)?(?:total\\s+)?closing\\s+costs${GAP}${MONEY}`, 2]],
+  cashToClose: [[`(?:estimated\\s+)?cash\\s+to\\s+close${GAP}${MONEY}`, 3]],
+  pointsPct: [[String.raw`(\d*\.?\d+)\s?%\s+of\s+loan\s+amount\s+\(points\)`, 3]],
+  pointsAmt: [[String.raw`%\s+of\s+loan\s+amount\s+\(points\)[^$\d]{0,10}` + MONEY, 3]],
+};
+
+export function parseDeclarations(text) { return runRules(HOI_RULES, text); }
+export function parseLoanEstimate(text) { return runRules(LE_RULES, text); }
+
+/** Guess the document type from its text. */
+export function detectDoc(text) {
+  const t = text.toLowerCase();
+  if (/loan estimate|closing disclosure|projected payments|cash to close/.test(t) && /loan term/.test(t)) return 'le';
+  if (/declarations?\s+page|policy\s+declarations|coverage\s+a|dwelling/.test(t) && /premium/.test(t)) return 'hoi';
+  return 'statement';
+}
+
 /** Extract text from a PDF File using the vendored pdf.js (loaded on demand). */
 export async function pdfText(file, rootPath) {
   // import() resolves against this module's URL, so build absolute URLs from the page.

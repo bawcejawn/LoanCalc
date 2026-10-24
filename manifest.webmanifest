@@ -1,0 +1,2 @@
+{ "name": "MortgageForge", "short_name": "MortgageForge", "start_url": "./", "display": "standalone", "background_color": "#eef2f6", "theme_color": "#172338",
+  "icons": [{ "src": "assets/icon.svg", "sizes": "any", "type": "image/svg+xml" }] }

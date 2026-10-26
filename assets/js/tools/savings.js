@@ -12,8 +12,9 @@ export function mount(el) {
     <section class="sheet"><h2 id="sv-h">Your savings opportunities</h2><div id="sv-hero"></div>
       <div class="chart-box short" id="sv-chart-wrap"><canvas id="sv-chart" role="img" aria-label="Estimated savings by opportunity"></canvas></div>
       <ul class="levers" id="sv-list" style="margin-top:8px"></ul>
+      <p class="promise"><b>Our promise:</b> these ideas come from math on your numbers, not from who pays us. Ads are marked "Ad", sit below your results, and can't change them. "Exact math" is a calculation; "Estimate" and "Rough guess" mean real offers can differ.</p>
       <div class="btn-row" style="margin-top:14px"><button type="button" class="btn" onclick="window.print()">Print my plan</button><a class="btn" href="${root()}saved-scenarios/">Save this scenario</a></div></section>
-    <section class="sheet"><h2>Your equity over time</h2><p class="lede">Balance from your schedule (with any extra payments) against a home value that grows at the rate on the left.</p><table class="ledger" id="sv-equity"></table></section>
+    <section class="sheet"><h2>Your equity over time</h2><p class="lede">Balance from your schedule (with any extra payments) against a home value that grows at the rate on the left.</p><div class="scroll" style="max-height:none"><table class="ledger" id="sv-equity"></table></div></section>
     <div class="slot" data-slot="results"></div>
   </div>`;
   inputsPanel(el.querySelector('.inputs'), () => `<h2>Assumptions</h2>
@@ -103,8 +104,8 @@ export function collect() {
     const params = { balance: +o.balance, ratePct: +o.ratePct, remainingMonths: +o.remainingMonths, currentPI: +o.monthlyPI || 0, newTermMonths: +f.newTermYears * 12, costs: +f.costs, pointsPct: +f.pointsPct, rollCosts: f.roll, stayYears: +f.stayYears };
     const r = F.refinance({ ...params, newRatePct: +f.newRatePct });
     const target = F.refiRateTarget(params);
-    if (r.netAtStay > 0 && r.savings > 0) add({ id: 'refi', group: 'Refinance', free: true, lifetime: r.netAtStay, monthly: r.savings, title: `Refinance to ${pct(+f.newRatePct, 3)}`, amount: `−${$0(r.savings)}/mo`,
-      note: `Breaks even in ${r.breakEven ? dur(r.breakEven) : 'over time'}, ${$0(r.netAtStay)} ahead after ${f.stayYears} years, counting ${$0(r.upfront)} of costs and the longer term.`, actions: [['Refinance details', root() + 'refinance-calculator/']] });
+    if (r.netAtStay > 0 && r.savings > 0) add({ id: 'refi', group: 'Refinance', free: true, lifetime: r.netAtStay, monthly: r.savings, title: `If you could refinance at ${pct(+f.newRatePct, 3)}`, amount: `−${$0(r.savings)}/mo`,
+      note: `${pct(+f.newRatePct, 3)} is the rate on the refinance page. Change it to a real quote to make this exact. At that rate you'd break even in ${r.breakEven ? dur(r.breakEven) : 'time'}, ${$0(r.netAtStay)} ahead after ${f.stayYears} years, counting ${$0(r.upfront)} of costs and the longer term.`, actions: [['Refinance details', root() + 'refinance-calculator/']] });
     else add({ id: 'refi', group: 'Refinance', free: true, lifetime: 0, title: target ? `Refinancing pays once rates reach ${pct(target, 3)}` : 'Refinancing does not pay at any rate for your timeline', amount: target ? 'Rate target' : '—', cost: true,
       note: target ? `At ${pct(+f.newRatePct, 3)} you would not come out ahead within ${f.stayYears} years. Set a rate alert with a lender at ${pct(target, 3)} or lower.` : 'Closing costs outweigh the savings over the years you expect to stay.',
       actions: [['Refinance details', root() + 'refinance-calculator/'], ...(target ? [['Add a reminder to check rates', 'ratecheck']] : [])], target });
@@ -172,8 +173,23 @@ export function collect() {
     }
   }
 
+  // How sure we are, in plain words, so results stay honest.
+  const SURE = { pmi: 'math', 'pmi-extra': 'math', fha: 'math', extra: 'math', goal: 'math', biweekly: 'math', refi: 'estimate', escrow: 'math',
+    credit: 'estimate', 'shop-rate': 'estimate', points: 'estimate', deductible: 'guess', shop: 'tip', dwelling: 'tip', 'hoi-upload': 'tip' };
+  const OTHER = {
+    extra: 'The other side: money you prepay is hard to get back out. Keep an emergency fund first.',
+    goal: 'The other side: this ties up a lot of cash each month. Only do it if your budget has room.',
+    refi: 'The other side: a new loan restarts the clock. Keep paying your old amount if you can.',
+    credit: 'The other side: raising a score takes time; don\'t miss a good rate waiting for a few points.',
+    deductible: 'The other side: if you have a claim, you pay more out of pocket.',
+  };
+  for (const i of items) { i.sure = SURE[i.id] || 'estimate'; if (OTHER[i.id]) i.note += ` <em class="other-side">${OTHER[i.id]}</em>`; }
   return { items, plan, info, own };
 }
+
+export const SURE_LABEL = { math: ['Exact math', 'Calculated from your numbers.'], estimate: ['Estimate', 'Based on typical prices; real offers can differ.'],
+  guess: ['Rough guess', 'Based on published averages; get a real quote.'], tip: ['Tip', 'A check worth doing; we can\'t put a number on it yet.'] };
+export const sureBadge = (k) => `<span class="sure sure-${k}" title="${SURE_LABEL[k][1]}">${SURE_LABEL[k][0]}</span>`;
 
 function render(el) {
   const { items, plan, info, own } = collect();
@@ -202,7 +218,7 @@ function render(el) {
     { label: 'Needs extra payments', data: money_.map((i) => (i.free ? null : i.lifetime)), backgroundColor: css('--c1'), borderRadius: 4, barThickness: 14 },
   ] }, options: opts });
 
-  const li = (i, n) => `<li><span><span class="badge muted" style="margin-right:6px">${i.group}</span><b>${esc(i.title)}</b></span><span class="amt ${i.cost ? 'cost' : ''}">${i.amount}</span><p>${i.note}</p>
+  const li = (i, n) => `<li><span><span class="badge muted" style="margin-right:6px">${i.group}</span><b>${esc(i.title)}</b> ${sureBadge(i.sure)}</span><span class="amt ${i.cost ? 'cost' : ''}">${i.amount}</span><p>${i.note}</p>
     ${i.actions.length ? `<span class="btn-row" style="grid-column:1/-1">${i.actions.map(([label, href], j) => href && href.includes('/') ? `<a class="btn small" href="${href}">${label}</a>` : `<button type="button" class="btn small" data-act="${n}:${j}">${label}</button>`).join('')}</span>` : ''}</li>`;
   el.querySelector('#sv-list').innerHTML = `<li class="group-h"><h3>Save without paying more</h3></li>${free.map((i, n) => li(i, n)).join('')}
     <li class="group-h"><h3>Put extra money to work</h3></li>${extra.map((i, n) => li(i, n + free.length)).join('')}`;

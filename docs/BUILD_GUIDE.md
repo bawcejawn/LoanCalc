@@ -269,3 +269,31 @@ Deeper calculators added to existing tools:
 12. **Embeddable widget**: an `<iframe>` version of the payment calculator for real-estate blogs, with a link back (good for SEO).
 
 Items 1–5 and parts of 9–10 are now built (see section 12).
+
+## 15. Plain-language design (written for a 12-year-old)
+
+- **Welcome page** (`tools/start.js`): what the site does in one sentence, a numbered "How it works" (4 steps), four key words explained, and "Our promise". Then the goal picker and one question per screen, labeled "Step 2 of 4 · Question 1 of 5".
+- **Home summary**: "Here's your answer" in a full sentence, a **checklist** for the visitor's goal that ticks off as they open each step, and the top 3 ways to save.
+- **"How this page works"** box at the top of every tool (`help.js` → `PAGES`): one sentence, 3 steps, what the numbers mean, and one "Good to know". Open on the first visit and folded after that.
+- **Tap-to-explain words**: hard words in results (PMI, escrow, principal, refinance, break-even, etc.) get a dotted underline and explain themselves on hover or tap (`help.js` → `WORDS`, `INLINE`). Ads and suggestions are skipped.
+- **Help button** in the header on every page: this page's steps, a searchable list of words, and "Start over".
+- **Upload button** in the header on every page. The upload page is a numbered 1-2-3: pick the paper (with "where to find it"), add the file, check the numbers (green = found, yellow = please check).
+- **Honest results**: every savings idea carries a label: **Exact math**, **Estimate**, **Rough guess** or **Tip**. The risky ones also show "The other side". Refinance ideas say plainly when the rate is an example rather than a real quote.
+- To edit any of this wording, change `assets/js/help.js` or the `STEPS`/`welcome()` text in `tools/start.js`, then run `npm run pages`.
+
+## 16. Lender ad slots
+
+Configured in `assets/js/site-config.js` → `lenders`; rendered by `assets/js/lenders.js`; sold using `docs/SELLING_ADS.md`; public sales page at `/advertise/`.
+
+- A "Lenders you can contact" box marked **Ad** appears below the results on the payment, affordability, compare, credit, refinance, PMI and savings pages.
+- It shows up to 3 lenders, shuffled each visit, with the same layout for each. Each listing has the licensed name, NMLS ID with a lookup link, a description, a licensing line, and website and call buttons.
+- When a page has no paying sponsor, an "Are you a lender? Advertise here" card shows instead (`houseAd: true`).
+- Listings disappear on their own after the `until` date.
+- With GoatCounter on, each listing's views and clicks are counted as `sponsor-view/<id>` and `sponsor-click/<id>` for monthly sponsor reports.
+- The rules come from the CFPB's 2023 RESPA advisory opinion on comparison sites:
+  - flat fee for the space only, never per lead or click;
+  - no steering or "recommended" lender;
+  - no visitor data passed to lenders;
+  - ads kept out of results.
+
+  Have a lawyer review once before the first sale.

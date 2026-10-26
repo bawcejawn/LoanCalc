@@ -5,7 +5,7 @@ import { root, monthOptions } from './shared.js';
 
 const DOCS = {
   statement: {
-    name: 'Mortgage statement', parse: parseStatement,
+    name: 'Mortgage statement', where: 'The monthly bill from the company you pay your mortgage to. Usually in your email or their website.', parse: parseStatement,
     tips: 'Look for "Unpaid principal balance", "Interest rate", "Principal", "Interest", "Escrow" and "Maturity date".',
     fields: [
       ['balance', 'Current principal balance', 'money'], ['ratePct', 'Interest rate', 'pct'], ['monthlyPI', 'Principal + interest payment', 'money'],
@@ -37,7 +37,7 @@ const DOCS = {
     },
   },
   hoi: {
-    name: 'Homeowners insurance declarations page', parse: parseDeclarations,
+    name: 'Home insurance page', where: 'The "declarations page" from your home insurance. It lists your price and what\'s covered.', parse: parseDeclarations,
     tips: 'The declarations ("dec") page is usually page 1 or 2 of your policy or renewal packet. Look for "Coverage A – Dwelling", "Deductible" and "Total premium".',
     fields: [
       ['premium', 'Total yearly premium', 'money'], ['deductible', 'All-perils deductible', 'money'], ['windPct', 'Wind/hail deductible (% of dwelling, if any)', 'pct'],
@@ -56,7 +56,7 @@ const DOCS = {
     },
   },
   le: {
-    name: 'Loan Estimate or Closing Disclosure', parse: parseLoanEstimate,
+    name: 'Loan Estimate', where: 'The 3-page form a lender gives you after you apply. A Closing Disclosure works too.', parse: parseLoanEstimate,
     tips: 'Page 1 has the loan terms and projected payments; page 2 has closing costs and points.',
     fields: [
       ['price', 'Sale price', 'money'], ['loanAmount', 'Loan amount', 'money'], ['ratePct', 'Interest rate', 'pct'], ['termYears', 'Loan term (years)', 'num'],
@@ -82,33 +82,30 @@ let docType = 'statement';
 export function mount(el) {
   el.classList.add('wide');
   el.innerHTML = `<div class="results">
-    <section class="sheet"><h2>Read a document</h2>
-      <p class="lede">Your file is read inside this browser tab. It is never uploaded, and nothing is saved except the numbers you confirm.</p>
-      <div class="seg" role="group" aria-label="Document type" id="im-type" style="margin-bottom:12px">${Object.entries(DOCS).map(([id, d]) =>
-        `<button type="button" data-doc="${id}" aria-pressed="${id === docType}">${d.name.replace('Homeowners insurance declarations page', 'Insurance declarations').replace('Loan Estimate or Closing Disclosure', 'Loan Estimate / CD')}</button>`).join('')}</div>
-      <label class="drop" id="im-drop" tabindex="0"><strong>Drop a PDF here</strong><span class="hint">or click to choose a file (PDF, PNG or JPG). We detect the document type for you.</span>
+    <section class="sheet"><h2>1. What kind of paper do you have?</h2>
+      <div class="doc-cards" role="group" aria-label="Document type">${Object.entries(DOCS).map(([id, d]) =>
+        `<button type="button" class="doc-card" data-doc="${id}" aria-pressed="${id === docType}"><b>${d.name}</b><span>${d.where}</span></button>`).join('')}</div>
+      <p class="hint" style="margin-top:8px">Not sure? Just drop it in below. We'll figure out which one it is.</p></section>
+    <section class="sheet"><h2>2. Add the file</h2>
+      <label class="drop" id="im-drop" tabindex="0"><strong>Tap here to choose a file</strong><span class="hint">or drag a PDF onto this box. Photos work too, but you'll type the numbers.</span>
         <input type="file" id="im-file" accept="application/pdf,image/png,image/jpeg" class="sr-only"></label>
-      <details style="margin-top:12px"><summary style="cursor:pointer;font-weight:600">Or paste the document text</summary>
-        <textarea id="im-text" rows="6" style="margin-top:8px" placeholder="Copy the text from your servicer's or insurer's website or PDF and paste it here"></textarea>
+      <p class="safe">Private: your file stays on this device. We read it right here in your browser and never send it anywhere.</p>
+      <details style="margin-top:12px"><summary style="cursor:pointer;font-weight:600">No file? Paste the text instead</summary>
+        <textarea id="im-text" rows="6" style="margin-top:8px" placeholder="Copy the text from your lender's or insurer's website and paste it here"></textarea>
         <button type="button" class="btn" id="im-parse" style="margin-top:8px">Read pasted text</button></details>
-      <p class="btn-row" style="margin-top:10px"><button type="button" class="btn small" id="im-manual">Type the numbers in instead</button></p>
-      <p id="im-status" class="hint" role="status" style="margin-top:6px"></p>
+      <p class="btn-row" style="margin-top:10px"><button type="button" class="btn small" id="im-manual">I'll type the numbers myself</button></p>
+      <p id="im-status" class="status-msg" role="status"></p>
     </section>
-    <section class="sheet" id="im-review" hidden><h2 id="im-review-h">Check these numbers</h2>
-      <p class="lede">Found automatically where possible. "Check this" means the match was weak. Fix anything that's wrong, then use them.</p>
+    <section class="sheet" id="im-review" hidden><h2 id="im-review-h">3. Check the numbers</h2>
+      <p class="lede">Green means we found it. Yellow means please check it or type it in. Fix anything that looks wrong; you know your papers best.</p>
       <div id="im-preview"></div><div class="found" id="im-fields"></div>
-      <div class="btn-row" style="margin-top:14px"><button type="button" class="btn primary" id="im-use">Use these numbers and check my savings</button></div>
+      <div class="btn-row" style="margin-top:14px"><button type="button" class="btn primary" id="im-use">These look right. Show my savings</button></div>
     </section>
-    <section class="sheet"><h2>Tips for best results</h2><ul>
-      <li>Use the PDF your servicer or insurer emails or posts online. Photos and scans contain no text, so type the numbers from the preview.</li>
-      <li>Password-protected PDFs need to be opened and saved without the password first.</li>
-      <li id="im-tip"></li></ul></section>
   </div>`;
   const drop = el.querySelector('#im-drop'), file = el.querySelector('#im-file'), status = el.querySelector('#im-status');
   const setType = (t) => {
     docType = t;
     el.querySelectorAll('[data-doc]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.doc === t)));
-    el.querySelector('#im-tip').textContent = DOCS[t].tips;
   };
   setType(docType);
   el.querySelectorAll('[data-doc]').forEach((b) => b.addEventListener('click', () => { setType(b.dataset.doc); el.querySelector('#im-review').hidden = true; }));
@@ -118,7 +115,7 @@ export function mount(el) {
     if (detected !== docType) setType(detected);
     const found = DOCS[docType].parse(text);
     const n = DOCS[docType].fields.filter(([k]) => found[k]).length;
-    status.textContent = text.trim().length < 40 ? 'This looks like a scan with no text. Type the values below.' : `Read as: ${DOCS[docType].name}. Found ${n} of ${DOCS[docType].fields.length} values.`;
+    status.textContent = text.trim().length < 40 ? 'This looks like a picture of a page, so we can\'t read the words. Please type the numbers below.' : `This looks like a ${DOCS[docType].name.toLowerCase()}. We found ${n} of ${DOCS[docType].fields.length} numbers. Please check them below.`;
     review(found);
   };
   const handle = async (f) => {
@@ -131,7 +128,7 @@ export function mount(el) {
       review({});
       return;
     }
-    status.textContent = 'Reading PDF…';
+    status.textContent = 'Reading your file…';
     try { run(await pdfText(f, root())); } catch (e) {
       status.textContent = e?.name === 'PasswordException' ? 'This PDF is password protected. Open it, save a copy without a password, and try again.' : 'Could not read this PDF. Paste the text instead, or type the values below.';
       review({});
@@ -148,13 +145,13 @@ export function mount(el) {
   function review(found) {
     const D = DOCS[docType];
     el.querySelector('#im-review').hidden = false;
-    el.querySelector('#im-review-h').textContent = `Check these numbers: ${D.name.toLowerCase()}`;
+    el.querySelector('#im-review-h').textContent = `3. Check the numbers from your ${D.name.toLowerCase()}`;
     const dateF = D.date && found[D.date[0]]?.value;
     const dd = dateF || D.fallbackDate?.();
     el.querySelector('#im-fields').innerHTML = D.fields.map(([k, label, kind]) => {
       const f = found[k];
       const v = f ? f.value : D.fallback(k);
-      return `<div class="f"><label for="im-${k}">${label} <span class="conf ${f && f.confidence >= 2 ? 'hi' : ''}">${f ? (f.confidence >= 2 ? 'found' : 'check this') : 'not found'}</span></label>
+      return `<div class="f ${f && f.confidence >= 2 ? 'found-ok' : 'found-check'}"><label for="im-${k}">${label} <span class="conf ${f && f.confidence >= 2 ? 'hi' : ''}">${f ? (f.confidence >= 2 ? 'found' : 'check this') : 'not found'}</span></label>
         <div class="affix">${kind === 'money' ? '<span class="pre">$</span>' : ''}<input type="text" inputmode="decimal" id="im-${k}" value="${esc(v ?? '')}" class="${kind === 'money' ? 'has-pre' : ''} ${kind === 'pct' ? 'has-post' : ''}">${kind === 'pct' ? '<span class="post">%</span>' : ''}</div></div>`;
     }).join('') + (D.date ? `<div class="f"><label for="im-dm">${D.date[1]} <span class="conf ${dateF ? 'hi' : ''}">${dateF ? 'found' : 'not found'}</span></label><div class="row">
       <select id="im-dm">${monthOptions.map(([v, l]) => `<option value="${v}" ${dd?.m == v ? 'selected' : ''}>${l}</option>`).join('')}</select>

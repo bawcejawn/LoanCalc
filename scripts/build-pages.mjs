@@ -2,6 +2,7 @@
 // Run after editing copy:  npm run pages   (no dependencies; the output is committed and served as-is)
 import { writeFileSync, mkdirSync, readFileSync, readdirSync } from 'node:fs';
 import { createHash } from 'node:crypto';
+import { SITE } from '../assets/js/site-config.js';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -30,8 +31,8 @@ const PAGES = [
     path: '', tool: 'start',
     title: 'MortgageForge: Free Mortgage Calculator & Savings Planner',
     description: 'Answer a few questions and see your mortgage payment and the biggest ways to save: PMI removal, extra payments, refinancing, insurance and more. Free, private, no sign-up.',
-    h1: 'Find the savings in your mortgage',
-    intro: 'A few quick questions, then only the tools that matter to you. Everything stays in your browser.',
+    h1: 'Understand your home loan and pay less',
+    intro: 'Free, simple and private. We walk you through it one step at a time.',
     body: `<h2>What MortgageForge does</h2>
       <p>MortgageForge is a free set of mortgage calculators that work together: monthly payment with taxes and PMI, a full payoff schedule, PMI removal dates, extra-payment and payoff-goal planning, refinance break-even, loan type comparison, affordability, credit score impact, and a reader for your statement, insurance policy or Loan Estimate.</p>
       <p>Instead of showing everything at once, it starts with what you want to do and adds tools as you go. Your numbers carry from one tool to the next.</p>`,
@@ -45,8 +46,8 @@ const PAGES = [
     path: 'mortgage-payment-calculator/', tool: 'payment',
     title: 'Mortgage Calculator with Taxes, Insurance & PMI | MortgageForge',
     description: 'Free mortgage payment calculator with property taxes, insurance, HOA and PMI. See your full PITI payment, closing cash and the exact changes that lower it. Private, no sign-up.',
-    h1: 'Mortgage payment calculator',
-    intro: 'Your full monthly payment with taxes, insurance and mortgage insurance, and the specific changes that would lower it. Everything is calculated in your browser.',
+    h1: 'Monthly payment calculator',
+    intro: 'Find out how much a home would cost you each month, and what would make it cheaper.',
     body: `<h2>What goes into a mortgage payment</h2>
       <p>Lenders call the full payment PITI: <strong>principal</strong> and <strong>interest</strong> on the loan, plus <strong>taxes</strong> and <strong>insurance</strong> usually collected into an escrow account. Many loans also carry mortgage insurance (PMI on conventional loans, MIP on FHA loans), and some homes have HOA dues. This calculator shows each piece separately so you can see which ones you can change.</p>
       <h2>How the payment is calculated</h2>
@@ -64,8 +65,8 @@ const PAGES = [
     path: 'amortization-schedule-calculator/', tool: 'amortization',
     title: 'Amortization Schedule Calculator with Extra Payments | MortgageForge',
     description: 'Month-by-month and yearly amortization schedule with extra payments, biweekly payments and lump sums. See interest saved, new payoff date and milestones. Export to CSV.',
-    h1: 'Amortization schedule with extra payments',
-    intro: 'See every payment, how much goes to interest, and exactly what extra payments save. Download the schedule or print it.',
+    h1: 'Payoff schedule',
+    intro: 'See every payment until your loan is gone, and how paying a little extra gets you there sooner.',
     body: `<h2>Reading an amortization schedule</h2>
       <p>Each mortgage payment covers that month's interest first; the rest reduces your balance. Early on, most of the payment is interest. As the balance falls, more goes to principal. The schedule highlights the month when principal first overtakes interest, when you reach 20% equity, and when mortgage insurance stops.</p>
       <h2>How extra payments work</h2>
@@ -82,8 +83,8 @@ const PAGES = [
     path: 'pmi-removal-calculator/', tool: 'pmi',
     title: 'PMI Removal Calculator: When Can I Cancel PMI? | MortgageForge',
     description: 'Find the exact month you can cancel PMI at 80% LTV, when it ends automatically at 78%, and how extra payments or a new appraisal get you there sooner. FHA MIP and USDA rules included.',
-    h1: 'PMI removal calculator',
-    intro: 'Find the earliest month you can stop paying mortgage insurance, what waiting costs, and how much extra a month gets you there by your target date.',
+    h1: 'Stop paying PMI',
+    intro: 'Find the first month you can stop paying mortgage insurance, and how to ask for it.',
     body: `<h2>The three ways conventional PMI ends</h2>
       <p>Under the Homeowners Protection Act, you can <strong>ask your servicer to cancel PMI</strong> once your balance reaches 80% of the home's original value, either on schedule or sooner through extra payments. PMI must <strong>end automatically</strong> when the balance is scheduled to reach 78%, and no later than the midpoint of the loan term, as long as you're current on payments.</p>
       <p>The automatic date is based only on the original schedule. Extra payments do not move it, so if you prepay you need to ask. That gap is often worth hundreds or thousands of dollars.</p>
@@ -101,8 +102,8 @@ const PAGES = [
     path: 'extra-payment-calculator/', tool: 'optimize',
     title: 'Extra Payment Mortgage Calculator & Optimizer | MortgageForge',
     description: 'Compare extra monthly payments, biweekly payments, yearly lump sums and rounding up. See which saves the most interest on your loan, and whether investing would beat prepaying.',
-    h1: 'Extra payment optimizer',
-    intro: 'Tell it what you can spare. It ranks the ways to use that money by how much interest and mortgage insurance each saves, and compares prepaying with investing.',
+    h1: 'Pay off your loan faster',
+    intro: 'Tell us how much extra you could pay. We show which way saves you the most money.',
     body: `<h2>How the strategies are ranked</h2>
       <p>Every strategy is simulated month by month on your actual loan. Savings include interest and any mortgage insurance that ends earlier because you reach 80% loan-to-value sooner. "Saved per $1 extra" shows how hard each extra dollar works.</p>
       <h2>Prepay or invest?</h2>
@@ -116,8 +117,8 @@ const PAGES = [
     path: 'refinance-calculator/', tool: 'refinance',
     title: 'Refinance Break-Even Calculator | MortgageForge',
     description: 'Find out if refinancing is worth it. Compares new and current payments, closing costs, points and term reset to give a true break-even month and your net savings over the years you stay.',
-    h1: 'Refinance break-even calculator',
-    intro: 'A true break-even that counts closing costs, points and the extra years a new loan adds, not just the change in monthly payment.',
+    h1: 'Should I refinance?',
+    intro: 'Find out if a new, lower rate would really save you money after paying the fees.',
     body: `<h2>Why the simple break-even misleads</h2>
       <p>The usual shortcut divides closing costs by monthly savings. It ignores that a new 30-year loan restarts the clock, so more of each payment goes to interest and you may owe more for longer. This calculator tracks both loans month by month and counts you ahead only when the cash you've kept, minus costs, outweighs any extra balance you still owe.</p>
       <h2>When refinancing tends to pay</h2>
@@ -133,7 +134,7 @@ const PAGES = [
     title: 'Home Affordability Calculator: How Much House Can I Afford? | MortgageForge',
     description: 'See how much house you can afford from your income, debts and down payment, at comfortable, standard (28/36) and stretch budgets. Includes taxes, insurance, HOA and PMI.',
     h1: 'How much house can I afford?',
-    intro: 'Three budgets from your income and debts: comfortable, standard and stretch. Each includes taxes, insurance and PMI.',
+    intro: 'Tell us what you earn and what you owe. We show three home price budgets: comfortable, standard and stretch.',
     body: `<h2>How lenders size your budget</h2>
       <p>Lenders compare your housing payment to gross monthly income (the front-end ratio) and all monthly debts including housing to income (the back-end ratio). The classic guide is 28% and 36%. Many loan programs allow more, but a higher ratio leaves less room for savings and surprises.</p>
       <h2>What counts as debt</h2>
@@ -148,7 +149,7 @@ const PAGES = [
     title: 'FHA vs Conventional vs VA vs USDA Loan Calculator (2026) | MortgageForge',
     description: 'Compare conventional, FHA, VA, USDA, jumbo and ARM loans side by side with 2026 rules: payment, mortgage insurance, upfront fees, cash to close and five-year cost.',
     h1: 'Compare loan types',
-    intro: 'The same home and the same cash, run through every major loan type with current program rules. The best fit is the cheapest to borrow over five years.',
+    intro: 'There are different kinds of home loans. See them side by side for the same home, and which one costs the least.',
     body: `<h2>2026 rules used here</h2>
       <p>The 2026 conforming loan limit for one-unit homes is $832,750 in most counties and up to $1,249,125 in high-cost areas; loans above the local limit are jumbo. FHA loans carry a 1.75% upfront premium plus an annual premium (0.55% for most 30-year loans with less than 5% down). VA loans have no monthly mortgage insurance but charge a funding fee of 1.25% to 3.3% unless you're exempt. USDA loans charge 1% upfront and 0.35% a year.</p>
       <h2>Why five-year cost</h2>
@@ -163,8 +164,8 @@ const PAGES = [
     path: 'arm-calculator/', tool: 'arm',
     title: 'ARM Calculator: Adjustable-Rate Mortgage Payment Projector | MortgageForge',
     description: 'Project ARM payments after the fixed period with caps, margin and index. See the worst-case payment and compare total cost with a fixed-rate mortgage over the years you plan to stay.',
-    h1: 'ARM payment projector',
-    intro: 'What happens to an adjustable-rate payment after the intro period, in the best, flat and worst cases, compared with a fixed rate.',
+    h1: 'Adjustable-rate loan check',
+    intro: 'Some loans start with a low rate that can change later. See what your payment could become.',
     body: `<h2>How an ARM adjusts</h2>
       <p>After the fixed period, the rate resets to an index (usually 30-day average SOFR) plus a margin, limited by caps. A 2/1/5 cap means the first change can be at most 2 points, each later change 1 point, and the rate can never rise more than 5 points above the start. Most notes round to the nearest eighth of a point.</p>
       <h2>When an ARM makes sense</h2>
@@ -179,7 +180,7 @@ const PAGES = [
     title: 'Upload Your Mortgage Statement, Insurance Policy or Loan Estimate | MortgageForge',
     description: 'Drop in a mortgage statement, homeowners insurance declarations page, or Loan Estimate PDF to auto-fill your numbers and find savings. Read entirely in your browser; files are never uploaded.',
     h1: 'Upload a document',
-    intro: 'Fill in your loan, insurance or quote from a PDF in seconds, then see where you can save. Files are read inside this tab and never leave your device.',
+    intro: 'Have a mortgage statement, insurance page or Loan Estimate? Drop it here and we\'ll fill in your numbers. It never leaves your device.',
     body: `<h2>What each document tells us</h2>
       <p><strong>Mortgage statement:</strong> balance, rate, payment, escrow, mortgage insurance and payoff date. Used to check PMI cancellation, refinancing, extra payments and whether your escrow is collecting too much.</p>
       <p><strong>Homeowners insurance declarations page:</strong> premium, deductibles, coverage limits and renewal date. Used to estimate deductible savings, remind you to shop before renewal and check escrow.</p>
@@ -198,8 +199,8 @@ const PAGES = [
     path: 'saved-scenarios/', tool: 'scenarios',
     title: 'Compare Mortgage Scenarios Side by Side | MortgageForge',
     description: 'Save mortgage scenarios in your browser and compare up to four side by side: payment, interest, PMI and payoff. Share a scenario with a link; no account needed.',
-    h1: 'Saved scenarios',
-    intro: 'Save versions of your plan, compare up to four side by side, and share one with a link. No account needed.',
+    h1: 'Saved plans',
+    intro: 'Save different versions of your plan and compare them side by side.',
     body: `<h2>Sharing without an account</h2><p>A share link packs the scenario's numbers into the link itself, so the person who opens it sees exactly what you see. Nothing is stored on a server.</p>`,
     faq: [],
   },
@@ -207,8 +208,8 @@ const PAGES = [
     path: 'mortgage-savings-check/', tool: 'savings',
     title: 'Mortgage Savings Check: Every Way to Save on Your Home Loan | MortgageForge',
     description: 'One page that finds every way to save on your mortgage: PMI removal, extra payments, payoff goals, refinancing, credit score, homeowners insurance and escrow. Ranked by dollars, private, free.',
-    h1: 'Mortgage savings check',
-    intro: 'Every way to save on your mortgage, ranked by how much each is worth, with the next step for each one.',
+    h1: 'My savings',
+    intro: 'Every way we found for you to save money, biggest first, and how to do each one.',
     body: `<h2>What it checks</h2>
       <p>The savings check runs your loan through every tool on the site at once: whether you can cancel PMI now or soon, which extra-payment approach saves the most, how much a month makes you mortgage-free by your goal, whether a refinance pays off for the years you'll stay (and the rate that would make it pay), what a higher credit score is worth, and, if you add your insurance declarations page, whether a higher deductible or a renewal quote could cut your premium and whether your escrow is collecting too much.</p>
       <h2>Why the savings don't simply add up</h2>
@@ -224,7 +225,7 @@ const PAGES = [
     title: 'Credit Score Mortgage Rate Calculator: What Your Score Costs | MortgageForge',
     description: 'See how your credit score changes your mortgage rate, PMI and monthly payment, band by band, using Fannie Mae\'s 2026 pricing grid. No credit check, no sign-up.',
     h1: 'What your credit score costs you',
-    intro: 'Your rate, PMI and payment at every credit score band, estimated from Fannie Mae\'s pricing grid. No credit check.',
+    intro: 'A higher credit score usually means a lower rate. See what yours could be worth each month. We never check your credit.',
     body: `<h2>How credit score changes a mortgage rate</h2>
       <p>Fannie Mae and Freddie Mac charge loan-level price adjustments based on credit score and loan-to-value. Lenders pass these on as a higher rate or upfront points. The grid used here is Fannie Mae's matrix updated September 30, 2026, for purchase loans over 15 years. Mortgage insurers also price PMI by credit score, so a lower score costs twice when you put less than 20% down.</p>
       <h2>How the estimate works</h2>
@@ -246,6 +247,33 @@ const PAGES = [
       <h2>3. Ask for every discount</h2><p>Bundling with auto, claims-free, new roof, monitored alarms, water-leak sensors, and paperless or autopay are common.</p>
       <h2>4. Check coverage, don't just cut it</h2><p>Dwelling coverage should match the cost to rebuild, not the market value or the loan balance. Too little leaves you exposed; your lender also sets a minimum.</p>
       <h2>5. Tell your servicer</h2><p>If insurance is paid from escrow, send the new policy to your servicer and ask for an escrow analysis so your monthly payment reflects the lower premium.</p>`,
+    faq: [],
+  },
+  {
+    path: 'advertise/', tool: '', guide: true,
+    title: 'Advertise on MortgageForge: Lender Listings | MortgageForge',
+    description: 'Reach people who are planning a mortgage. Clearly labeled lender listings on MortgageForge calculators, at a flat monthly price.',
+    h1: 'Advertise your lending business',
+    intro: 'Reach people while they plan a purchase or refinance. Clearly labeled, flat monthly price, no lead fees.',
+    body: `<h2>Who uses MortgageForge</h2>
+      <p>Home buyers and homeowners using free calculators to plan a purchase, check a refinance, remove PMI or pay their loan off faster. Ask us for the latest monthly visitor numbers for the pages you're interested in.</p>
+      <h2>Where your listing appears</h2>
+      <p>In a box titled "Lenders you can contact", marked <span class="ad-tag">Ad</span>, below the results on these pages: monthly payment, affordability, compare loan types, credit score, refinance, PMI and the savings summary. Up to three lenders appear on a page, in random order each visit.</p>
+      <h2>What your listing includes</h2>
+      <ul><li>Your licensed company name and NMLS ID, with a link to look you up on NMLS Consumer Access</li><li>A one-line description and your licensing line (for example, the states you're licensed in and "Equal Housing Lender")</li><li>A "Visit website" button and a tap-to-call button</li><li>A monthly report of how many times your listing was shown and clicked</li></ul>
+      <h2>Price</h2>
+      <p>A flat monthly fee for the space, for 1, 3, 6 or 12 months. ${SITE.advertise.priceNote} You pay for the listing, not for clicks, leads or loans.</p>
+      <h2>Our rules</h2>
+      <p>These rules keep the site useful for visitors, which is what makes the space worth buying.</p>
+      <ul><li>Listings are always labeled as ads and shown in random order. No lender is ranked above another or called "recommended".</li>
+        <li>Listings never appear inside results, savings ideas or loan comparisons, and advertisers can't change any calculation.</li>
+        <li>We don't collect or share visitor details. Visitors contact you only if they choose to.</li>
+        <li>The fee is for advertising space only. We don't accept payment per lead, click or closed loan, or for referrals.</li>
+        <li>Listings must show your licensed name and NMLS ID, and may not quote interest rates or make claims we can't verify.</li>
+        <li>We may decline or remove a listing at any time, with a pro-rated refund.</li></ul>
+      <p>MortgageForge is not a lender or mortgage broker and does not take loan applications.</p>
+      <h2>Get started</h2>
+      <p>Email <a href="mailto:${SITE.advertise.email}">${SITE.advertise.email}</a> with your company name, NMLS ID, the states you serve, the pages you'd like, and your preferred start date.</p>`,
     faq: [],
   },
   // Guides (content pages for search and AdSense review)
@@ -294,7 +322,8 @@ const PAGES = [
     intro: 'Short version: your numbers and files stay on your device.',
     body: `<h2>What we collect</h2><p>Nothing on our side. The calculators run as JavaScript in your browser. Inputs and saved scenarios are kept in your browser's local storage so they're there when you come back. You can clear them any time by clearing site data.</p>
       <h2>Statement files</h2><p>PDFs and images you choose are read in the page and never uploaded.</p>
-      <h2>Hosting, ads and links</h2><p>The site is hosted on GitHub Pages, which keeps standard server logs. If advertising is enabled, the ad network may set cookies and will be listed here with a consent notice where required. Partner links are labeled.</p>
+      <h2>Visitor counts</h2><p>${SITE.analytics.goatcounter ? 'We count visits with GoatCounter, which does not use cookies or store personal data. It records the page, the referring site, browser type, screen size and country, plus how often sponsored listings are shown and clicked.' : 'We do not currently count visits.'}</p>
+      <h2>Hosting, ads and links</h2><p>The site is hosted on GitHub Pages, which keeps standard server logs. Lender listings are marked "Ad", appear in random order, and receive no information about you; if you click one, you go to that company's website under its own privacy policy. If a display ad network is ever enabled, it will be listed here with a consent notice where required. Partner links are labeled.</p>
       <h2>Not financial advice</h2><p>Results are estimates for planning. Confirm details with your lender, servicer or a licensed professional.</p>`,
     faq: [],
   },
@@ -343,7 +372,9 @@ function page(p) {
   <a class="brand" href="${root}" data-nav aria-label="MortgageForge home"><svg width="26" height="26" viewBox="0 0 32 32" aria-hidden="true"><path d="M4 15 16 5l12 10v12a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1z" fill="none" stroke="#fff" stroke-width="2.4" stroke-linejoin="round"/><path d="M10 22h4v-5h4v5h4" fill="none" stroke="#7ee2b8" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>MortgageForge</a>
   <dl class="ribbon" id="ribbon" aria-label="Your plan at a glance"></dl>
   <div class="top-actions">
-    <a class="icon-btn" href="${root}saved-scenarios/" data-nav title="Save or compare scenarios"><svg width="14" height="14" viewBox="0 0 16 16" aria-hidden="true"><path d="M3 2h8l2 2v10H3z" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M5 2v4h6V2" fill="none" stroke="currentColor" stroke-width="1.6"/></svg><span class="label">Save</span></a>
+    <a class="icon-btn upload-btn" href="${root}mortgage-statement-reader/" data-nav title="Upload a mortgage statement, insurance page or Loan Estimate"><svg width="14" height="14" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 11V2M4.5 5.5 8 2l3.5 3.5M2 11v3h12v-3" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Upload</span></a>
+    <button class="icon-btn" id="help-btn" type="button" title="What is this page? What do these words mean?"><svg width="14" height="14" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="6.5" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M6.2 6.2a1.9 1.9 0 1 1 2.6 1.8c-.5.2-.8.6-.8 1.1v.4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><circle cx="8" cy="11.6" r=".9" fill="currentColor"/></svg><span>Help</span></button>
+    <a class="icon-btn" href="${root}saved-scenarios/" data-nav title="Save or compare plans"><svg width="14" height="14" viewBox="0 0 16 16" aria-hidden="true"><path d="M3 2h8l2 2v10H3z" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M5 2v4h6V2" fill="none" stroke="currentColor" stroke-width="1.6"/></svg><span class="label">Save</span></a>
     <button class="icon-btn" id="theme-btn" type="button" aria-label="Switch light or dark mode"><svg width="15" height="15" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 1.5a6.5 6.5 0 1 0 0 13z" fill="currentColor"/><circle cx="8" cy="8" r="6.5" fill="none" stroke="currentColor" stroke-width="1.4"/></svg></button>
   </div>
 </header>
@@ -355,7 +386,7 @@ function page(p) {
   <article class="article">${fix(p.body)}${p.faq.length ? `<h2>Questions</h2>${p.faq.map(([q, a]) => `<details><summary>${q}</summary><p>${fix(a)}</p></details>`).join('')}` : ''}
     <div class="slot" data-slot="article"></div>
   </article>
-  <footer class="foot"><span>© ${UPDATED.slice(0, 4)} MortgageForge. Estimates for planning, not financial advice.</span><a href="${root}privacy/">Privacy</a><a href="https://github.com/bawcejawn/LoanCalc">Source code</a><span>Private by design: everything runs in your browser.</span><span>Program rules last reviewed ${UPDATED.slice(0, 7)}.</span><span id="tip"></span></footer>
+  <footer class="foot"><span>© ${UPDATED.slice(0, 4)} MortgageForge. Estimates for planning, not financial advice.</span><a href="${root}privacy/">Privacy</a><a href="${root}advertise/">Advertise</a><a href="https://github.com/bawcejawn/LoanCalc">Source code</a><span>Private by design: everything runs in your browser.</span><span>Program rules last reviewed ${UPDATED.slice(0, 7)}.</span><span id="tip"></span></footer>
 </main>
 </div>
 <script src="${root}assets/vendor/chart.umd.min.js" defer></script>

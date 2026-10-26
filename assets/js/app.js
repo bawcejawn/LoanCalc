@@ -4,6 +4,8 @@ import { state, derive, subscribe, emit, firstMonth, $0, ym, dur, destroyCharts,
 import * as F from './finance.js';
 import { SITE } from './site-config.js';
 import { ux, saveUx, visit, unlock, unlockedTools, suggestionsFor, TOOL_INFO } from './ux.js';
+import { guideBox, glossify, initHelp } from './guide.js';
+import { renderLenders, initAnalytics, pageview } from './lenders.js';
 
 const TOOLS = {
   start: () => import('./tools/start.js'),
@@ -59,7 +61,7 @@ function ribbon() {
     <div class="rb primary"><dt>${info.mode === 'own' ? 'My payment' : 'Monthly payment'}</dt><dd>${$0(m.total)}</dd></div>
     <div class="rb"><dt>Paid off</dt><dd>${ym(res.payoff)}</dd></div>
     ${miEnd ? `<div class="rb"><dt>${info.miLabel} ends</dt><dd>${miEnd}</dd></div>` : ''}
-    <div class="rb keep"><dt>You keep</dt><dd>${saved > 0.5 ? `<span id="rb-saved">${$0(saved)}</span> <small style="font-size:12px;font-weight:500;opacity:.8">${dur(c.monthsSaved)} sooner</small>` : `<a href="${root}mortgage-savings-check/">Find savings</a>`}</dd></div>`;
+    <div class="rb keep"><dt>You could save</dt><dd>${saved > 0.5 ? `<span id="rb-saved">${$0(saved)}</span> <small style="font-size:12px;font-weight:500;opacity:.8">${dur(c.monthsSaved)} sooner</small>` : `<a href="${root}mortgage-savings-check/">Find savings</a>`}</dd></div>`;
   if (saved > 0.5 && Math.abs(saved - lastSaved) > 1 && !matchMedia('(prefers-reduced-motion: reduce)').matches) countUp(document.getElementById('rb-saved'), lastSaved, saved);
   lastSaved = saved;
 }
@@ -79,7 +81,7 @@ async function mountTool(id) {
   const mod = await load();
   current = mod.mount(el) || null;
   visit(id);
-  if (id !== 'start') { progressive(el, id); suggest(el, id); }
+  if (id !== 'start') { progressive(el, id); suggest(el, id); renderLenders(el, id); guideBox(el, id); glossify(el); }
   buildNav();
   fillSlots(id);
 }
@@ -135,7 +137,7 @@ function buildNav() {
 }
 function remount() { mountTool(document.body.dataset.tool); ribbon(); }
 
-subscribe(() => { current?.update?.(); ribbon(); });
+subscribe(() => { current?.update?.(); ribbon(); glossify(toolEl()); });
 document.addEventListener('mf:nav', () => { buildNav(); ribbon(); });
 document.addEventListener('mf:remount', (e) => { remount(); if (e.detail) toast(e.detail); });
 
@@ -164,7 +166,7 @@ async function go(href, push = true) {
     document.body.dataset.tool = doc.body.dataset.tool;
     if (push) history.pushState({}, '', href);
     markNav();
-    bindTheme(); tipJar();
+    bindTheme(); tipJar(); initHelp(); pageview();
     await mountTool(doc.body.dataset.tool);
     ribbon();
     window.scrollTo({ top: 0 });
@@ -227,3 +229,5 @@ markNav();
 if (location.hash.startsWith('#s=')) { emit(); history.replaceState({}, '', location.pathname); toast('Shared scenario loaded'); }
 mountTool(document.body.dataset.tool).then(ribbon);
 tipJar();
+initHelp();
+initAnalytics();

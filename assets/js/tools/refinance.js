@@ -7,7 +7,7 @@ export function mount(el) {
   el.innerHTML = `<form class="inputs" aria-label="Refinance inputs" onsubmit="return false"></form>
   <div class="results">
     <section class="sheet"><h2>Is refinancing worth it?</h2><div id="rf-verdict"></div><dl class="stats" id="rf-stats"></dl></section>
-    <section class="sheet"><h2>Your advantage from refinancing, month by month</h2><p class="lede">Cash you keep from lower payments, minus closing costs you paid, minus any extra balance you still owe. Above zero means you're ahead.</p>
+    <section class="sheet"><h2>Are you ahead yet? Month by month</h2><p class="lede">Cash you keep from lower payments, minus closing costs you paid, minus any extra balance you still owe. Above zero means you're ahead.</p>
       <div class="chart-box"><canvas id="rf-chart" role="img" aria-label="Net advantage of refinancing over time"></canvas></div></section>
     <section class="sheet"><h2>The rate that makes it worth it</h2><div id="rf-target"></div></section>
     <section class="sheet"><h2>Points or no points?</h2><p class="lede">Each point costs 1% of the loan up front. Assumes one point lowers the rate about ${'0.25'} points; ask your lender for their actual trade.</p><table class="ledger" id="rf-points"></table></section>

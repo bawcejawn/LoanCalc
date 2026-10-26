@@ -14,7 +14,7 @@ export function mount(el) {
       <dl class="stats" id="pp-stats"></dl>
     </section>
     <section class="sheet" aria-labelledby="lv-h"><h2 id="lv-h">Ways to pay less</h2><p class="lede">Each one is calculated from your numbers.</p><ul class="levers" id="pp-levers"></ul></section>
-    <section class="sheet" id="pp-close-wrap" aria-labelledby="cc-h"><h2 id="cc-h">Cash needed at closing</h2><table class="ledger" id="pp-close"></table></section>
+    <section class="sheet" id="pp-close-wrap" aria-labelledby="cc-h"><h2 id="cc-h">Cash you need on buying day</h2><table class="ledger" id="pp-close"></table></section>
     <div class="slot" data-slot="results"></div>
   </div>`;
   const form = el.querySelector('.inputs');

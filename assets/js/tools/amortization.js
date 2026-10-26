@@ -9,11 +9,11 @@ export function mount(el) {
   el.innerHTML = `<form class="inputs" aria-label="Loan and extra payments" onsubmit="return false"></form>
   <div class="results">
     <section class="sheet"><h2>What extra payments do</h2><dl class="stats" id="am-stats" style="border-top:0;margin-top:0"></dl></section>
-    <section class="sheet"><h2>Balance over time</h2><div class="chart-box"><canvas id="am-bal" role="img" aria-label="Loan balance by year, with and without extra payments"></canvas></div></section>
+    <section class="sheet"><h2>How much you'll still owe</h2><div class="chart-box"><canvas id="am-bal" role="img" aria-label="Loan balance by year, with and without extra payments"></canvas></div></section>
     <section class="sheet"><h2>Where each year's payments go</h2><div class="chart-box"><canvas id="am-split" role="img" aria-label="Principal and interest paid each year"></canvas></div></section>
-    <section class="sheet"><h2>Milestones</h2><ul class="levers" id="am-ms"></ul></section>
+    <section class="sheet"><h2>Big moments on the way</h2><ul class="levers" id="am-ms"></ul></section>
     <section class="sheet"><div style="display:flex;flex-wrap:wrap;gap:10px;justify-content:space-between;align-items:center;margin-bottom:12px">
-      <h2 style="margin:0">Schedule</h2>
+      <h2 style="margin:0">Every payment</h2>
       <div class="btn-row"><div class="seg" style="width:auto" role="group" aria-label="Schedule view"><button type="button" data-view="year">Yearly</button><button type="button" data-view="month">Monthly</button></div>
       <button type="button" class="btn small" id="am-csv">Download CSV</button><button type="button" class="btn small" onclick="window.print()">Print</button></div></div>
       <div class="scroll"><table class="ledger" id="am-table"></table></div></section>

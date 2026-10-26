@@ -13,7 +13,7 @@ export function mount(el) {
   el.innerHTML = `<form class="inputs" aria-label="Affordability inputs" onsubmit="return false"></form>
   <div class="results">
     <section class="sheet"><h2>How much home you can afford</h2><p class="lede" id="af-lede"></p><div class="cols" id="af-cols"></div></section>
-    <section class="sheet"><h2>Standard budget, month by month</h2><table class="ledger" id="af-break"></table></section>
+    <section class="sheet"><h2>Standard budget, month by month</h2><div class="scroll" style="max-height:none;border:0"><table class="ledger" id="af-break"></table></div></section>
     <section class="sheet"><h2>Raise your budget without stretching</h2><ul class="levers" id="af-levers"></ul></section>
     <div class="slot" data-slot="results"></div>
   </div>`;

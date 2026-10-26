@@ -44,20 +44,57 @@ export function mount(el) {
   return { update() { if (!goal && ux.onboarded) summary(el, draw); } };
 }
 
-/* ---------- step 0: what are you here for ---------- */
+/* ---------- step 0: welcome, then what are you here for ---------- */
+let picking = false;
 function pick(el, draw) {
+  if (!picking) return welcome(el, draw);
   el.innerHTML = `<div class="results"><section class="sheet start">
+    <div class="progress" aria-hidden="true"><i class="on"></i><i></i><i></i><i></i></div>
+    <p class="step-label">Step 1 of 4</p>
     <h2 class="start-q">What would you like to do?</h2>
-    <p class="lede">Pick one. We'll ask a few quick questions and show only what matters to you. You can explore everything else later.</p>
+    <p class="lede">Pick the one that sounds most like you. You can change it later.</p>
     <div class="goals big">${Object.entries(GOALS).map(([id, g]) => `<button type="button" class="goal" data-goal="${id}"><b>${g.label}</b><span>${{
-      buy: 'Payment, what you can afford, which loan fits', lower: 'PMI, refinancing, insurance and escrow', faster: 'Extra payments and a payoff date', explore: 'Go straight to the payment calculator' }[id]}</span></button>`).join('')}</div>
-    <p class="hint" style="margin-top:14px">Private by design: everything stays in your browser.</p></section></div>`;
+      buy: "I'm thinking about buying a house.", lower: 'I already have a mortgage and want to pay less each month.', faster: 'I already have a mortgage and want to be done sooner.', explore: 'Skip the questions. Show me the calculator.' }[id]}</span></button>`).join('')}</div>
+    <div class="btn-row" style="margin-top:18px"><button type="button" class="btn" id="st-back">Back</button></div></section></div>`;
+  el.querySelector('#st-back').addEventListener('click', () => { picking = false; draw(); });
   el.querySelectorAll('[data-goal]').forEach((b) => b.addEventListener('click', () => {
     const g = b.dataset.goal;
     if (g === 'explore') { setGoal('explore'); location.href = root() + TOOL_INFO.payment.path; return; }
     set('mode', g === 'buy' ? 'buy' : 'own', { silent: true });
-    goal = g; step = 0; draw();
+    goal = g; step = 0; picking = false; draw();
   }));
+}
+
+function welcome(el, draw) {
+  el.innerHTML = `<div class="results"><section class="sheet start welcome">
+    <h2 class="start-q">Welcome! Let's figure out your home loan together.</h2>
+    <p class="lede">This site helps you understand a <b>mortgage</b> (a loan to buy a home) and find ways to pay less. It's free, there's nothing to sign up for, and it takes about two minutes.</p>
+    <h3 class="sub-h">How it works</h3>
+    <ol class="how">
+      <li><b>Tell us what you want to do.</b><span>Buying a home? Already have one? Just pick one.</span></li>
+      <li><b>Add your numbers.</b><span>Answer a few short questions, or upload your mortgage statement and we'll fill them in for you.</span></li>
+      <li><b>See your answer.</b><span>Your monthly payment and when the loan will be paid off, in plain words.</span></li>
+      <li><b>Find ways to save.</b><span>Ideas that could save you money, biggest first, with a label that says how sure we are about each one.</span></li>
+    </ol>
+    <div class="btn-row big-btns"><button type="button" class="btn primary" id="st-go">Let's start</button>
+      <a class="btn" href="${root()}${TOOL_INFO.import.path}">Upload a paper instead</a></div>
+    <p class="hint" style="margin-top:12px">Stuck anywhere? Tap <b>Help</b> at the top. Words with a dotted line under them explain themselves when you tap them.</p>
+  </section>
+  <section class="sheet start"><h3 class="sub-h" style="margin-top:0">Four words you'll see a lot</h3>
+    <dl class="words four">
+      <div><dt>Interest</dt><dd>The extra money you pay for borrowing. It's like rent, but for money.</dd></div>
+      <div><dt>Principal</dt><dd>The money you actually borrowed. Each payment pays some of it back.</dd></div>
+      <div><dt>PMI</dt><dd>An extra charge when you put less than 20% down. It can be removed later, and we'll show you when.</dd></div>
+      <div><dt>Escrow</dt><dd>A savings jar your lender keeps to pay your property tax and home insurance for you.</dd></div>
+    </dl></section>
+  <section class="sheet start"><h3 class="sub-h" style="margin-top:0">Our promise</h3>
+    <ul class="promise-list">
+      <li>We show the math, not a sales pitch.</li>
+      <li>Ads are always marked <span class="ad-tag">Ad</span>, sit below your results, and can't change them.</li>
+      <li>Your numbers and papers stay on your device. We never ask for your name, Social Security number or account numbers.</li>
+      <li>When something is a guess, we say so.</li>
+    </ul></section></div>`;
+  el.querySelector('#st-go').addEventListener('click', () => { picking = true; draw(); el.querySelector('.goal')?.focus(); });
 }
 
 /* ---------- one question at a time ---------- */
@@ -74,7 +111,8 @@ function wizard(el, draw) {
   else if (s.kind === 'chips') body = `<div class="goals">${s.options.map(([v, l]) => `<button type="button" class="goal ${String(cur) === String(v) ? 'on' : ''}" data-choice="${v}"><b>${l}</b></button>`).join('')}</div>`;
   else body = `<div class="big-input"><span>${pre}</span><input id="wz-in" type="text" inputmode="decimal" autocomplete="off" value="${esc(s.kind === 'money' ? Math.round(+cur).toLocaleString('en-US') : cur)}" aria-label="${esc(s.q)}"><span>${post}</span></div>${chips}`;
   el.innerHTML = `<div class="results"><section class="sheet start" aria-live="polite">
-    <div class="progress" aria-label="Step ${step + 1} of ${steps.length}">${steps.map((_, i) => `<i class="${i <= step ? 'on' : ''}"></i>`).join('')}</div>
+    <div class="progress" aria-hidden="true">${steps.map((_, i) => `<i class="${i <= step ? 'on' : ''}"></i>`).join('')}</div>
+    <p class="step-label">Step 2 of 4 · Question ${step + 1} of ${steps.length}</p>
     <h2 class="start-q">${s.q}</h2>${s.help ? `<p class="lede">${s.help}</p>` : ''}
     ${body}
     <div class="btn-row" style="margin-top:22px"><button type="button" class="btn" id="wz-back">Back</button>${s.kind === 'money' || s.kind === 'pct' || s.kind === 'years' ? '<button type="button" class="btn primary" id="wz-next">Next</button>' : ''}
@@ -103,7 +141,7 @@ function wizard(el, draw) {
   }));
   el.querySelector('#wz-next')?.addEventListener('click', next);
   el.querySelector('#wz-skip').addEventListener('click', () => { step++; draw(); });
-  el.querySelector('#wz-back').addEventListener('click', () => { if (step === 0) { goal = null; } else step--; draw(); });
+  el.querySelector('#wz-back').addEventListener('click', () => { if (step === 0) { goal = null; picking = true; } else step--; draw(); });
 }
 
 function finish(draw) {
@@ -117,32 +155,45 @@ function finish(draw) {
 }
 
 /* ---------- personal summary ---------- */
+const CHECKLIST = {
+  buy: [['payment', 'See your full monthly payment'], ['afford', 'Check how much home you can afford'], ['compare', 'Compare kinds of loans'], ['credit', 'See what your credit score is worth'], ['import', 'Get 3 lender quotes, then upload each Loan Estimate']],
+  lower: [['import', 'Upload your mortgage statement'], ['pmi', 'Find out when PMI can stop'], ['refinance', 'Check if a new rate would pay off'], ['savings', 'See every way to save']],
+  faster: [['optimize', 'Pick the best way to pay extra'], ['amortization', 'See your new payoff date'], ['pmi', 'Check if PMI ends sooner too'], ['savings', 'See every way to save']],
+  explore: [['payment', 'See your monthly payment'], ['amortization', 'See your payoff schedule'], ['savings', 'See every way to save']],
+};
+
 async function summary(el, draw) {
   const { plan, info } = derive();
   const res = F.amortize(plan);
   const m = firstMonth(res, plan);
-  const { collect } = await import('./savings.js');
+  const { collect, sureBadge } = await import('./savings.js');
   const { items } = collect();
   const top = [...items.filter((i) => i.free && (i.lifetime > 1 || i.monthly > 1)), ...items.filter((i) => !i.free)].slice(0, 3);
-  const mine = unlockedTools().filter((t) => t !== 'start');
-  const next = suggestionsFor(ux.goal === 'buy' ? 'payment' : 'savings', 3).filter((t) => !mine.includes(t)).slice(0, 2);
   const own = info.mode === 'own';
   const link = (i) => (i.actions.find(([, h]) => h && h.includes('/')) || [])[1];
+  const list = CHECKLIST[ux.goal] || CHECKLIST.explore;
+  const done = list.filter(([t]) => ux.visits[t] > 0).length;
+  const next = list.find(([t]) => !(ux.visits[t] > 0));
+  const mi = plan.mi.kind !== 'none' ? ` You also pay ${info.miLabel}, which ${res.miEnd ? `can stop in ${ym(F.monthOf(plan.start, res.miEnd))}` : 'lasts the whole loan'}.` : '';
   el.innerHTML = `<div class="results">
     <section class="sheet">
-      <div style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:baseline"><h2 style="margin:0">${own ? 'Your loan today' : 'Your purchase plan'}</h2>
+      <div style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:baseline"><h2 style="margin:0">Here's your answer</h2>
         <button type="button" class="btn small" id="st-redo">Change my answers</button></div>
-      <div class="hero" style="grid-template-columns:1fr;margin-top:10px"><div><div class="big">${$0(m.total)}<small> /month</small></div>
-      <div class="sub">${own ? `${$0(plan.principal)} at ${pct(plan.ratePct, 3)}, paid off ${ym(res.payoff)}` : `${$0(info.loan)} loan at ${pct(plan.ratePct, 3)} on a ${$0(info.price)} home`}${plan.mi.kind !== 'none' ? `. ${info.miLabel} ${res.miEnd ? 'can end ' + ym(F.monthOf(plan.start, res.miEnd)) : 'lasts the life of the loan'}` : ''}.</div></div></div>
+      <div class="hero" style="grid-template-columns:1fr;margin-top:10px"><div><div class="big">${$0(m.total)}<small> a month</small></div>
+      <p class="plain">${own
+        ? `You owe ${$0(plan.principal)} at ${pct(plan.ratePct, 3)} interest. If you keep paying like you are now, the loan will be paid off in <b>${ym(res.payoff)}</b>.`
+        : `For a ${$0(info.price)} home with ${$0(info.down)} down, you'd borrow ${$0(info.loan)} at ${pct(plan.ratePct, 3)} interest. Over ${plan.months / 12} years you'd pay ${$0(res.totals.interest)} in interest on top of the loan.`}${mi}</p></div></div>
     </section>
-    <section class="sheet"><h2>Your best ${top.length > 1 ? top.length + ' moves' : 'move'}</h2>
-      <ul class="levers">${top.map((i) => `<li><b>${esc(i.title)}</b><span class="amt ${i.cost ? 'cost' : ''}">${i.amount}</span><p>${i.note}</p>${link(i) ? `<a class="btn small" href="${link(i)}">Show me how</a>` : ''}</li>`).join('')}</ul>
-      <p style="margin:12px 0 0"><a href="${root()}${TOOL_INFO.savings.path}">See every way to save</a></p></section>
-    <section class="sheet"><h2>Your tools</h2><p class="lede">Picked for what you want to do. More appear as you explore.</p>
-      <div class="tool-cards">${mine.map((t) => card(t)).join('')}</div>
-      ${next.length ? `<h3 class="sub-h">You might also want</h3><div class="tool-cards">${next.map((t) => card(t, true)).join('')}</div>` : ''}
-    </section></div>`;
-  el.querySelector('#st-redo').addEventListener('click', () => { ux.onboarded = false; saveUx(); document.dispatchEvent(new Event('mf:nav')); draw(); });
+    <section class="sheet"><h2>Your checklist</h2>
+      <div class="meter" role="img" aria-label="${done} of ${list.length} done"><i style="width:${(done / list.length) * 100}%"></i></div>
+      <p class="hint">${done} of ${list.length} done${next ? `. Next: <b>${esc(next[1])}</b>.` : '. Nice work!'}</p>
+      <ol class="checklist">${list.map(([t, label]) => { const ok = ux.visits[t] > 0; return `<li class="${ok ? 'done' : ''} ${next && next[0] === t ? 'next' : ''}"><a data-nav data-unlock="${t}" href="${root()}${TOOL_INFO[t].path}"><span class="tick" aria-hidden="true">${ok ? '✓' : ''}</span><span>${esc(label)}</span>${ok ? '<span class="sr-only">(done)</span>' : ''}</a></li>`; }).join('')}</ol>
+    </section>
+    <section class="sheet"><h2>${top.length} ways you could save</h2>
+      <ul class="levers">${top.map((i) => `<li><span><b>${esc(i.title)}</b> ${sureBadge(i.sure)}</span><span class="amt ${i.cost ? 'cost' : ''}">${i.amount}</span><p>${i.note}</p>${link(i) ? `<a class="btn small" data-nav href="${link(i)}">Show me how</a>` : ''}</li>`).join('')}</ul>
+      <p style="margin:12px 0 0"><a data-nav href="${root()}${TOOL_INFO.savings.path}">See every way to save</a></p></section>
+  </div>`;
+  el.querySelector('#st-redo').addEventListener('click', () => { ux.onboarded = false; saveUx(); picking = true; document.dispatchEvent(new Event('mf:nav')); draw(); });
   el.querySelectorAll('[data-unlock]').forEach((a) => a.addEventListener('click', () => unlock(a.dataset.unlock)));
 }
 

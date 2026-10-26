@@ -9,9 +9,9 @@ export function mount(el) {
   el.innerHTML = `<form class="inputs" aria-label="PMI inputs" onsubmit="return false"></form>
   <div class="results">
     <section class="sheet"><h2>When your mortgage insurance can end</h2><div id="pm-body"></div></section>
-    <section class="sheet" id="pm-actions-wrap"><h2>Make the request</h2><div id="pm-actions"></div></section>
-    <section class="sheet" id="pm-chart-wrap"><h2>Loan-to-value over time</h2><div class="chart-box"><canvas id="pm-ltv" role="img" aria-label="Loan-to-value by month with 80 and 78 percent lines"></canvas></div></section>
-    <section class="sheet"><h2>How removal works for your loan type</h2><div id="pm-rules"></div></section>
+    <section class="sheet" id="pm-actions-wrap"><h2>How to ask</h2><div id="pm-actions"></div></section>
+    <section class="sheet" id="pm-chart-wrap"><h2>How much you owe compared with the home's value</h2><div class="chart-box"><canvas id="pm-ltv" role="img" aria-label="Loan-to-value by month with 80 and 78 percent lines"></canvas></div></section>
+    <section class="sheet"><h2>The rules for your kind of loan</h2><div id="pm-rules"></div></section>
     <div class="slot" data-slot="results"></div>
   </div>`;
   inputsPanel(el.querySelector('.inputs'), () => `<h2>Your plan</h2>

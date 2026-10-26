@@ -32,7 +32,9 @@ npm run pages     # regenerate pages after ANY change to copy, JS or CSS (update
 Preview locally with any static server from the parent folder (`npx serve ..`, then open `/LoanCalc/`).
 
 - Program rules (loan limits, MIP, VA, USDA): `assets/js/config.js`
-- Ads, affiliate links, Koinos tip jar (all off by default): `assets/js/site-config.js`
+- Lender ad slots, ads, affiliate links, analytics, Koinos tip jar: `assets/js/site-config.js`
+- How to sell lender ad space: [docs/SELLING_ADS.md](docs/SELLING_ADS.md)
+- Plain-language help text and word list: `assets/js/help.js`
 - Full plan, SEO, monetization, deployment checklist and roadmap: [docs/BUILD_GUIDE.md](docs/BUILD_GUIDE.md)
 
 Results are estimates for planning, not financial advice.

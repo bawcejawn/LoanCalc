@@ -2,7 +2,8 @@
 import { state, set, derive, firstMonth, $0, pct, ym, dur, esc } from '../core.js';
 import * as F from '../finance.js';
 import { ux, setGoal, saveUx, unlockedTools, suggestionsFor, unlock, TOOL_INFO, GOALS } from '../ux.js';
-import { root } from './shared.js';
+import { root, applyStateDefaults } from './shared.js';
+import { STATES } from '../states.js';
 
 const CREDIT = [[780, '780+'], [740, '740–779'], [700, '700–739'], [660, '660–699'], [620, 'Below 660']];
 
@@ -10,6 +11,7 @@ const CREDIT = [[780, '780+'], [740, '740–779'], [700, '700–739'], [660, '66
 const STEPS = {
   buy: [
     { q: 'About how much is the home?', path: 'buy.price', kind: 'money', chips: [300000, 450000, 600000, 800000] },
+    { q: 'Which state is the home in?', path: 'buy.state', kind: 'state', help: 'We\'ll fill in typical property tax and insurance for that state. You can change them later.' },
     { q: 'How much will you put down?', path: 'buy.downPct', kind: 'pct', chips: [3.5, 5, 10, 20], help: 'Under 20% usually means mortgage insurance. We\'ll show when it can end.', before: () => set('buy.downMode', 'pct', { silent: true }) },
     { q: 'Roughly what is your credit score?', path: 'buy.credit', kind: 'chips', options: CREDIT, help: 'Your best guess is fine. We never check your credit.' },
     { q: 'What interest rate have you been quoted?', path: 'buy.ratePct', kind: 'pct', chips: [5.75, 6.25, 6.75, 7.25], help: "No quote yet? Leave our placeholder and change it later." },
@@ -108,6 +110,7 @@ function wizard(el, draw) {
   const chips = s.chips ? `<div class="chips">${s.chips.map((c) => `<button type="button" class="chip" data-chip="${c}">${s.kind === 'money' ? $0(c) : c + (post ? (s.kind === 'pct' ? '%' : ' yrs') : '')}</button>`).join('')}</div>` : '';
   let body;
   if (s.kind === 'choice') body = `<div class="goals">${s.options.map(([v, l, d]) => `<button type="button" class="goal" data-choice="${v}"><b>${l}</b><span>${d}</span></button>`).join('')}</div>`;
+  else if (s.kind === 'state') body = `<select id="wz-state" class="big-select" aria-label="${esc(s.q)}"><option value="">Choose a state</option>${STATES.map((x) => `<option value="${x.code}" ${state.buy.state === x.code ? 'selected' : ''}>${x.name}</option>`).join('')}</select>`;
   else if (s.kind === 'chips') body = `<div class="goals">${s.options.map(([v, l]) => `<button type="button" class="goal ${String(cur) === String(v) ? 'on' : ''}" data-choice="${v}"><b>${l}</b></button>`).join('')}</div>`;
   else body = `<div class="big-input"><span>${pre}</span><input id="wz-in" type="text" inputmode="decimal" autocomplete="off" value="${esc(s.kind === 'money' ? Math.round(+cur).toLocaleString('en-US') : cur)}" aria-label="${esc(s.q)}"><span>${post}</span></div>${chips}`;
   el.innerHTML = `<div class="results"><section class="sheet start" aria-live="polite">
@@ -115,11 +118,12 @@ function wizard(el, draw) {
     <p class="step-label">Step 2 of 4 · Question ${step + 1} of ${steps.length}</p>
     <h2 class="start-q">${s.q}</h2>${s.help ? `<p class="lede">${s.help}</p>` : ''}
     ${body}
-    <div class="btn-row" style="margin-top:22px"><button type="button" class="btn" id="wz-back">Back</button>${s.kind === 'money' || s.kind === 'pct' || s.kind === 'years' ? '<button type="button" class="btn primary" id="wz-next">Next</button>' : ''}
+    <div class="btn-row" style="margin-top:22px"><button type="button" class="btn" id="wz-back">Back</button>${s.kind === 'money' || s.kind === 'pct' || s.kind === 'years' || s.kind === 'state' ? '<button type="button" class="btn primary" id="wz-next">Next</button>' : ''}
       <button type="button" class="btn" id="wz-skip" style="margin-left:auto">${step === steps.length - 1 ? 'Skip' : 'Skip this'}</button></div>
   </section></div>`;
   const input = el.querySelector('#wz-in');
   const commit = () => {
+    if (s.kind === 'state') { const v = el.querySelector('#wz-state').value; set('buy.state', v, { silent: true }); if (v) applyStateDefaults(); return; }
     if (!input || !s.path) return;
     const n = parseFloat(input.value.replace(/[^0-9.]/g, ''));
     if (!isFinite(n)) return;
@@ -156,7 +160,7 @@ function finish(draw) {
 
 /* ---------- personal summary ---------- */
 const CHECKLIST = {
-  buy: [['payment', 'See your full monthly payment'], ['afford', 'Check how much home you can afford'], ['compare', 'Compare kinds of loans'], ['credit', 'See what your credit score is worth'], ['import', 'Get 3 lender quotes, then upload each Loan Estimate']],
+  buy: [['payment', 'See your full monthly payment'], ['afford', 'Check how much home you can afford'], ['rentbuy', 'Check if buying beats renting'], ['closing', 'Add up your closing costs'], ['compare', 'Compare kinds of loans'], ['import', 'Get 3 lender quotes, then upload each Loan Estimate']],
   lower: [['import', 'Upload your mortgage statement'], ['pmi', 'Find out when PMI can stop'], ['refinance', 'Check if a new rate would pay off'], ['savings', 'See every way to save']],
   faster: [['optimize', 'Pick the best way to pay extra'], ['amortization', 'See your new payoff date'], ['pmi', 'Check if PMI ends sooner too'], ['savings', 'See every way to save']],
   explore: [['payment', 'See your monthly payment'], ['amortization', 'See your payoff schedule'], ['savings', 'See every way to save']],

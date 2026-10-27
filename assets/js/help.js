@@ -100,6 +100,18 @@ export const PAGES = {
     numbers: [['vs you', 'How much more or less you\'d pay each month with a different score.']],
     watch: 'We never check your credit. These are estimates based on how lenders usually price loans.',
   },
+  rentbuy: {
+    what: 'Compares renting and buying the same kind of home, to see which leaves you with more money after the years you\'d stay.',
+    steps: ['Type the rent for a similar home and how long you\'d stay.', 'Type the home price, down payment and rate.', 'Read the green or yellow box, then try different numbers.'],
+    numbers: [['If you buy', 'What you\'d have: the home\'s value after selling costs, minus what you still owe, plus money saved.'], ['If you rent', 'The money you didn\'t spend on buying, invested.'], ['Breaks even', 'How many years until buying comes out ahead.']],
+    watch: 'If you might move within a few years, renting often wins because buying and selling cost a lot.',
+  },
+  closing: {
+    what: 'Adds up every fee you pay to buy a home, so you know how much cash to bring.',
+    steps: ['Type the home price, down payment and your state.', 'Look at the big number: that\'s your cash to close.', 'Open "Change the fees" when you get a real Loan Estimate.'],
+    numbers: [['Closing costs', 'Fees to get the loan and transfer the home, plus bills paid ahead.'], ['Cash to close', 'Down payment plus closing costs, minus credits and your deposit.']],
+    watch: 'Never wire money because of an emailed link. Call your title company at a number you trust first.',
+  },
   arm: {
     what: 'Shows what an adjustable-rate loan payment could do after the first few years.',
     steps: ['Type the starting rate and how many years it stays fixed.', 'Look at the lines: the orange one is the worst case.', 'Make sure you could afford the worst case.'],

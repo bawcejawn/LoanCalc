@@ -1,5 +1,6 @@
 // Inputs shared by several tools + helpers to evaluate "what if" variants.
-import { field, state, derive, get } from '../core.js';
+import { field, state, derive, get, set } from '../core.js';
+import { STATES, stateByCode, STATE_SOURCES } from '../states.js';
 import * as F from '../finance.js';
 
 const thisYear = new Date().getFullYear();
@@ -32,6 +33,7 @@ export function loanInputs({ compact = false } = {}) {
   ${t === 'fha' || t === 'va' || t === 'usda' ? field({ path: 'buy.financeFee', kind: 'check', label: 'Add the upfront fee to my loan' }) : ''}
   ${compact ? '</details>' : `
   <h2>Taxes, insurance and fees</h2>
+  ${stateField()}
   ${field({ path: 'buy.taxPct', label: 'Property tax (per year)', kind: 'pct', slider: true, min: 0, max: 3, step: 0.05, tip: 'Percent of home value. Check your county assessor; the US average is around 1%.' })}
   ${field({ path: 'buy.insAnnual', label: 'Home insurance (per year)', kind: 'money' })}
   ${field({ path: 'buy.hoa', label: 'HOA dues (per month)', kind: 'money' })}
@@ -102,7 +104,7 @@ export function inputsPanel(container, html, bind, extraRebuild = []) {
   const rebuildOn = new Set([...REBUILD, ...extraRebuild]);
   const render = (focusPath) => {
     container.innerHTML = html();
-    bind(container, (path) => { if (rebuildOn.has(path)) render(path); });
+    bind(container, (path) => { if (path === 'buy.state') applyStateDefaults(); if (rebuildOn.has(path) || path === 'buy.state') render(path); });
     container.querySelectorAll('details.more-opts').forEach((d) => d.addEventListener('toggle', () => { moreOpen = d.open; }));
     if (focusPath) container.querySelector(`[data-path="${focusPath}"], [data-seg="${focusPath}"][aria-pressed="true"]`)?.focus();
   };
@@ -113,4 +115,22 @@ export function inputsPanel(container, html, bind, extraRebuild = []) {
 /** Ask the app to rebuild the current tool (after a button changes inputs). */
 export function remount(msg) {
   document.dispatchEvent(new CustomEvent('mf:remount', { detail: msg }));
+}
+
+/** State picker that fills in typical property tax and insurance for that state. */
+export function stateField() {
+  const st = stateByCode(state.buy.state);
+  return field({ path: 'buy.state', label: 'State', kind: 'select', options: [['', 'Choose a state'], ...STATES.map((x) => [x.code, x.name])],
+    hint: st ? `Filled in ${st.name}'s typical property tax (${st.taxPct}%, ${STATE_SOURCES.tax}) and insurance ($${st.ins.toLocaleString('en-US')}/yr, ${STATE_SOURCES.ins}). Your real bills may differ; change them below.` : 'Pick the state to fill in typical property tax and insurance.' });
+}
+/** Some tools only take a down-payment percent; keep it in step with a dollar amount entered elsewhere. */
+export function syncDownPct() {
+  if (state.buy.downMode === 'amt' && +state.buy.price) set('buy.downPct', Math.round(+state.buy.downAmt / +state.buy.price * 1000) / 10, { silent: true });
+  set('buy.downMode', 'pct', { silent: true });
+}
+export function applyStateDefaults() {
+  const st = stateByCode(state.buy.state);
+  if (!st) return;
+  set('buy.taxPct', st.taxPct, { silent: true });
+  set('buy.insAnnual', st.ins);
 }

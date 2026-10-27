@@ -297,3 +297,10 @@ Configured in `assets/js/site-config.js` → `lenders`; rendered by `assets/js/l
   - ads kept out of results.
 
   Have a lawyer review once before the first sale.
+
+## 17. Added October 27
+
+- **Rent or buy?** (`/rent-vs-buy-calculator/`, `tools/rentbuy.js`, `rentVsBuy()` in `finance.js`). Both paths spend the same money: the renter invests the buyer's up-front cash, and each month whoever pays less invests the difference. It includes upkeep, selling costs, rent and price growth, and PMI ending. It leaves out income-tax effects and says so.
+- **Closing costs** (`/closing-cost-calculator/`, `tools/closing.js`, `closingCosts()`). Itemized in Loan Estimate sections (lender, can't shop, can shop, government, prepaids, escrow), with credits, earnest money and a wire-fraud warning. It compares against an uploaded Loan Estimate, and "Use this total" sends the number to the payment calculator. Defaults are labeled "Rough guess".
+- **State defaults** (`assets/js/states.js`). Picking a state fills in property tax (Census ACS 2024 effective rate on owner-occupied homes) and insurance (NAIC 2022 average HO-3 premium), each labeled with its source. Buyers are asked for their state in the welcome questions, and every buying tool has a state picker. Update the numbers when newer Census and NAIC releases come out.
+- **Terms of use** (`/terms/`) is drafted but hidden: it's marked noindex, left out of the sitemap and not linked. After you and your lawyer approve it, set `TERMS_APPROVED = true` in `scripts/build-pages.mjs`, run `npm run pages` and push.

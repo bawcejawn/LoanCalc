@@ -9,7 +9,9 @@ import { fileURLToPath } from 'node:url';
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 // Your live URL. Change this if you add a custom domain (and add a CNAME file).
 const BASE = 'https://bawcejawn.github.io/LoanCalc/';
-const UPDATED = '2026-10-23';
+const UPDATED = '2026-10-27';
+// Flip to true after you (and your lawyer) approve the Terms of use. Until then the page exists but isn't linked, listed or indexed.
+const TERMS_APPROVED = false;
 
 // Cache busting: every JS module and the stylesheet get a ?v=<content hash> so returning visitors
 // always load matching files after a deploy. Module URLs are remapped with an import map.
@@ -20,7 +22,7 @@ const importMap = (root) => JSON.stringify({ imports: Object.fromEntries(MODULES
 
 const NAV = [
   ['Start here', [['mortgage-savings-check/', 'My savings'], ['mortgage-statement-reader/', 'Upload a document']]],
-  ['Buying', [['mortgage-payment-calculator/', 'Monthly payment'], ['home-affordability-calculator/', 'Affordability'], ['fha-vs-conventional-calculator/', 'Compare loan types'], ['credit-score-mortgage-rate-calculator/', 'Credit score impact'], ['arm-calculator/', 'ARM projector']]],
+  ['Buying', [['mortgage-payment-calculator/', 'Monthly payment'], ['home-affordability-calculator/', 'Affordability'], ['fha-vs-conventional-calculator/', 'Compare loan types'], ['rent-vs-buy-calculator/', 'Rent or buy?'], ['closing-cost-calculator/', 'Closing costs'], ['credit-score-mortgage-rate-calculator/', 'Credit score impact'], ['arm-calculator/', 'ARM projector']]],
   ['Owning', [['amortization-schedule-calculator/', 'Payoff schedule'], ['pmi-removal-calculator/', 'Remove PMI'], ['extra-payment-calculator/', 'Pay off faster'], ['refinance-calculator/', 'Refinance check']]],
   ['Your data', [['saved-scenarios/', 'Saved plans']]],
 ];
@@ -276,6 +278,53 @@ const PAGES = [
       <p>Email <a href="mailto:${SITE.advertise.email}">${SITE.advertise.email}</a> with your company name, NMLS ID, the states you serve, the pages you'd like, and your preferred start date.</p>`,
     faq: [],
   },
+  {
+    path: 'rent-vs-buy-calculator/', tool: 'rentbuy',
+    title: 'Rent vs Buy Calculator: Is Buying a Home Worth It? | MortgageForge',
+    description: 'Compare renting and buying year by year with the same money spent either way. Includes upkeep, selling costs, rent increases and what your savings could earn. Free and private.',
+    h1: 'Should I rent or buy?',
+    intro: 'Compare renting and buying the same kind of home, and see which leaves you with more money after the years you\'d stay.',
+    body: `<h2>How the comparison works</h2>
+      <p>Buying costs more up front (down payment and closing costs) and comes with bills renters don't pay: property tax, insurance, upkeep and selling costs later. Renting costs rent, which usually rises every year. To compare fairly, the calculator gives both paths the same money: the renter invests the cash a buyer would spend up front, and each month whoever pays less invests the difference. At the end it compares what each would have.</p>
+      <h2>What matters most</h2>
+      <p>How long you stay matters most. Buying and selling cost a lot, so short stays often favor renting. After that come the gap between rent and the full cost of owning, how fast home prices and rents grow, and what your savings could earn.</p>`,
+    faq: faq([
+      ['Is it always better to buy?', 'No. If you might move within a few years, or rent is cheap compared with home prices where you live, renting can leave you with more money.'],
+      ['Does this include tax deductions?', 'No. Most homeowners now take the standard deduction, so mortgage interest often doesn\'t lower their taxes.'],
+      ['What upkeep should I expect?', 'A common rule of thumb is about 1% of the home\'s value each year, more for older homes.'],
+    ]),
+  },
+  {
+    path: 'closing-cost-calculator/', tool: 'closing',
+    title: 'Closing Cost Calculator: Itemized Fees and Cash to Close | MortgageForge',
+    description: 'Estimate every closing cost line by line, the way a Loan Estimate shows it: lender fees, title, appraisal, taxes, prepaids and escrow. See your cash to close and which fees you can shop for.',
+    h1: 'How much are closing costs?',
+    intro: 'Add up every fee you pay to buy a home, see how much cash to bring, and find the fees you can shop for.',
+    body: `<h2>What closing costs include</h2>
+      <p>Closing costs are the fees to get your loan and transfer the home to you, plus some bills paid ahead. Lenders must list them on a Loan Estimate within three business days of your application, grouped into loan costs (lender fees, services you can and can't shop for) and other costs (taxes and government fees, prepaids and your starting escrow balance).</p>
+      <h2>Protect your closing money</h2>
+      <p>Wire fraud often targets buyers right before closing. Never send money based on emailed instructions alone. Call your title or settlement company at a phone number you already trust to confirm the details.</p>`,
+    faq: faq([
+      ['How much are closing costs usually?', 'Often about 2% to 5% of the loan, but it varies a lot by state, loan and lender. Your Loan Estimate has your real numbers.'],
+      ['Can I lower my closing costs?', 'Yes: shop for the services the Loan Estimate says you can shop for, compare lender fees, ask for seller or lender credits, and close near the end of the month.'],
+      ['What is cash to close?', 'The total you bring on closing day: your down payment plus closing costs, minus credits and any deposit you already paid.'],
+    ]),
+  },
+  {
+    path: 'terms/', tool: '', guide: true, draft: !TERMS_APPROVED,
+    title: 'Terms of Use | MortgageForge',
+    description: 'The plain-language terms for using MortgageForge.',
+    h1: 'Terms of use',
+    intro: 'The short version: these are free planning tools, the results are estimates, and decisions are yours to make with a professional.',
+    body: `<h2>What MortgageForge is</h2><p>MortgageForge is a free set of calculators and guides for planning a home loan. It is not a lender, mortgage broker, financial adviser, insurance agent, lawyer or tax adviser, and it does not take loan applications or make loans.</p>
+      <h2>Results are estimates</h2><p>Every result is an estimate based on the numbers you enter and on published rules and averages that can change or may not fit your situation. Real rates, fees, insurance prices and taxes come from your lender, insurer and local government. Check anything important with them, or with a licensed professional, before you act on it.</p>
+      <h2>Your information</h2><p>The calculators run in your browser. What you type and any documents you open are not sent to us. See the <a href="../privacy/">Privacy</a> page for details.</p>
+      <h2>Ads and links</h2><p>Lender listings and other ads are labeled. They are paid placements, not recommendations, and advertisers can't change any result. Links to other websites are provided for convenience; those sites have their own terms and privacy policies.</p>
+      <h2>No warranty</h2><p>The site is provided as it is, without any warranty. We work to keep it accurate, but we can't promise it is error-free, always available, or right for your situation.</p>
+      <h2>Limits on responsibility</h2><p>To the extent the law allows, MortgageForge is not responsible for losses that come from using the site or relying on its results.</p>
+      <h2>Changes</h2><p>We may update the site and these terms. The date at the bottom of each page shows when program rules were last reviewed.</p>`,
+    faq: [],
+  },
   // Guides (content pages for search and AdSense review)
   {
     path: 'guides/how-to-remove-pmi/', tool: '', guide: true,
@@ -352,7 +401,7 @@ function page(p) {
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>${p.title}</title>
-<meta name="description" content="${escA(p.description)}">
+<meta name="description" content="${escA(p.description)}">${p.draft ? '\n<meta name="robots" content="noindex">' : ''}
 <link rel="canonical" href="${url}">
 <meta property="og:type" content="website"><meta property="og:site_name" content="MortgageForge">
 <meta property="og:title" content="${escA(p.title)}"><meta property="og:description" content="${escA(p.description)}"><meta property="og:url" content="${url}">
@@ -386,7 +435,7 @@ function page(p) {
   <article class="article">${fix(p.body)}${p.faq.length ? `<h2>Questions</h2>${p.faq.map(([q, a]) => `<details><summary>${q}</summary><p>${fix(a)}</p></details>`).join('')}` : ''}
     <div class="slot" data-slot="article"></div>
   </article>
-  <footer class="foot"><span>© ${UPDATED.slice(0, 4)} MortgageForge. Estimates for planning, not financial advice.</span><a href="${root}privacy/">Privacy</a><a href="${root}advertise/">Advertise</a><a href="https://github.com/bawcejawn/LoanCalc">Source code</a><span>Private by design: everything runs in your browser.</span><span>Program rules last reviewed ${UPDATED.slice(0, 7)}.</span><span id="tip"></span></footer>
+  <footer class="foot"><span>© ${UPDATED.slice(0, 4)} MortgageForge. Estimates for planning, not financial advice.</span><a href="${root}privacy/">Privacy</a>${TERMS_APPROVED ? `<a href="${root}terms/">Terms</a>` : ''}<a href="${root}advertise/">Advertise</a><a href="https://github.com/bawcejawn/LoanCalc">Source code</a><span>Private by design: everything runs in your browser.</span><span>Program rules last reviewed ${UPDATED.slice(0, 7)}.</span><span id="tip"></span></footer>
 </main>
 </div>
 <script src="${root}assets/vendor/chart.umd.min.js" defer></script>
@@ -406,6 +455,6 @@ for (const p of PAGES) {
 const nf = page({ path: '', tool: '', title: 'Page not found | MortgageForge', description: 'This page does not exist.', h1: 'That page doesn’t exist', intro: '<a href="/LoanCalc/">Go to the mortgage calculator</a>.', body: '', faq: [] })
   .split('href="./').join('href="/LoanCalc/').split('src="./').join('src="/LoanCalc/').replace('data-root="./"', 'data-root="/LoanCalc/"');
 writeFileSync(join(ROOT, '404.html'), nf);
-writeFileSync(join(ROOT, 'sitemap.xml'), `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${PAGES.map((p) => `  <url><loc>${BASE}${p.path}</loc><lastmod>${UPDATED}</lastmod></url>`).join('\n')}\n</urlset>\n`);
+writeFileSync(join(ROOT, 'sitemap.xml'), `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${PAGES.filter((p) => !p.draft).map((p) => `  <url><loc>${BASE}${p.path}</loc><lastmod>${UPDATED}</lastmod></url>`).join('\n')}\n</urlset>\n`);
 writeFileSync(join(ROOT, 'robots.txt'), `User-agent: *\nAllow: /\nSitemap: ${BASE}sitemap.xml\n`);
 console.log(`Wrote ${PAGES.length} pages + 404, sitemap.xml, robots.txt`);

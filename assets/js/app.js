@@ -21,6 +21,8 @@ const TOOLS = {
   scenarios: () => import('./tools/scenarios.js'),
   savings: () => import('./tools/savings.js'),
   credit: () => import('./tools/credit.js'),
+  rentbuy: () => import('./tools/rentbuy.js'),
+  closing: () => import('./tools/closing.js'),
 };
 
 let current = null;

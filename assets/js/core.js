@@ -10,7 +10,7 @@ const firstPay = { y: today.getMonth() >= 10 ? today.getFullYear() + 1 : today.g
 export const DEFAULTS = {
   mode: 'buy',
   buy: { price: 450000, downMode: 'pct', downPct: 10, downAmt: 45000, ratePct: 6.25, termYears: 30, loanType: 'conventional', credit: 740,
-    taxPct: 1.1, insAnnual: 1900, hoa: 0, pmiPct: '', vaSubsequent: false, vaExempt: false, financeFee: true, closingPct: 3, startY: firstPay.y, startM: firstPay.m },
+    taxPct: 1.1, insAnnual: 1900, hoa: 0, pmiPct: '', vaSubsequent: false, vaExempt: false, financeFee: true, closingPct: 3, startY: firstPay.y, startM: firstPay.m, state: '' },
   own: { originalAmount: 380000, originalValue: 425000, originalTermYears: 30, balance: 362000, ratePct: 6.875, remainingMonths: 324, monthlyPI: '',
     taxMonthly: 420, insMonthly: 160, hoa: 0, miKind: 'pmi', miMonthly: 175, mipLife: true, nextY: firstPay.y, nextM: firstPay.m, escrowMonthly: '', taxBillAnnual: '', credit: 740 },
   extras: { monthly: 0, annual: 0, annualMonth: 12, oneTimeAmt: 0, oneTimeK: 12, biweekly: false },
@@ -21,6 +21,9 @@ export const DEFAULTS = {
   arm: { initialRatePct: 5.625, fixedYears: 5, adjustEvery: 6, caps: '2/1/5', marginPct: 2.75, indexPct: 4.3, fixedRatePct: 6.25, holdYears: 7 },
   opt: { budget: 200, lump: 5000, investPct: 6, goalYears: 15, recastFee: 250, biweeklyFee: 0, delayYears: 5 },
   goals: { appreciationPct: 3 },
+  rvb: { rent: 2200, rentGrowthPct: 3, rentersIns: 15, maintPct: 1, appreciationPct: 3, sellPct: 6, investPct: 5, stayYears: 7 },
+  cc: { origPct: 0.5, lenderFees: 1200, appraisal: 650, creditReport: 75, floodTax: 100, titleLenderPct: 0.5, titleOwner: 0, settlement: 900,
+    inspections: 450, recording: 250, transferPct: 0, sellerCredit: 0, lenderCredit: 0, earnest: 0, prepaidDays: 15, escrowMonths: 3 },
   hoi: { loaded: false, premium: '', deductible: '', windPct: '', dwelling: '', otherStructures: '', personalProperty: '', lossOfUse: '', liability: '', renewalM: '', renewalY: '' },
   le: { loaded: false, price: 0, loanAmount: 0, ratePct: 0, termYears: 0, monthlyPI: 0, escrow: 0, closingCosts: 0, cashToClose: 0, pointsPct: 0 },
 };

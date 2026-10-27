@@ -159,3 +159,25 @@ test('equity projection', () => {
   near(e.value, 375000 * Math.pow(1.03, 10), 1);
   assert.ok(e.equity > 375000 * Math.pow(1.03, 10) - 300000);
 });
+
+test('rent vs buy: cheap rent favors renting, expensive rent favors buying', () => {
+  const base = { price: 400000, down: 40000, closing: 12000, ratePct: 6.5, taxPct: 1.0, insAnnual: 1800, appreciationPct: 3, investPct: 5, years: 30 };
+  const cheap = F.rentVsBuy({ ...base, rent: 1200 });
+  const dear = F.rentVsBuy({ ...base, rent: 3800 });
+  assert.ok(cheap.years[6].rentWorth > cheap.years[6].buyWorth, 'cheap rent: renting ahead at 7 years');
+  assert.ok(dear.years[6].buyWorth > dear.years[6].rentWorth, 'expensive rent: buying ahead at 7 years');
+  assert.ok(dear.breakEvenYear !== null && dear.breakEvenYear <= 7);
+  // year-1 renter starts with the buyer's upfront cash invested
+  assert.ok(cheap.years[0].rentWorth > 52000);
+  // equity after 30 years: loan paid off, so equity ≈ value less selling costs
+  near(dear.years[29].balance, 0, 1);
+});
+
+test('closing costs add up and credits reduce cash', () => {
+  const c = F.closingCosts({ loan: 360000, price: 400000, ratePct: 6.5, insAnnual: 1800, taxAnnual: 4800, down: 40000, earnest: 5000, sellerCredit: 3000,
+    items: [{ id: 'orig', label: 'Origination', section: 'lender', amount: 1800 }, { id: 'appr', label: 'Appraisal', section: 'noShop', amount: 600 }, { id: 'title', label: 'Title', section: 'shop', amount: 1500 }] });
+  const prepaidInt = 360000 * 0.065 / 365 * 15;
+  near(c.total, 1800 + 600 + 1500 + prepaidInt + 1800 + 450 + 1200, 0.01);
+  near(c.cashToClose, 40000 + c.total - 3000 - 5000, 0.01);
+  near(c.loanCosts, 3900, 0.01);
+});

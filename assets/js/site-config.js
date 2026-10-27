@@ -23,7 +23,7 @@ export const SITE = {
     enabled: true,
     maxShown: 3,                 // per page
     houseAd: true,               // show an "Advertise here" card when a page has no paid sponsor
-    pages: ['payment', 'afford', 'compare', 'credit', 'refinance', 'pmi', 'savings'],
+    pages: ['payment', 'afford', 'rentbuy', 'closing', 'compare', 'credit', 'refinance', 'pmi', 'savings'],
     list: [
       // Copy this block for each sponsor. Remove or let `until` pass when they stop paying.
       // {

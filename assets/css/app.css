@@ -446,3 +446,5 @@ body[data-tool="start"] .tool { max-width: 760px; }
   .top-actions { padding: 0 8px; }
 }
 .ledger td:first-child { white-space: normal; }
+.big-select { width: 100%; font: inherit; font-size: 20px; font-weight: 600; padding: 12px 14px; border: 2px solid var(--rule); border-radius: 12px; background: var(--field); color: var(--ink); margin-top: 10px; }
+.big-select:focus { border-color: var(--action); outline: none; }

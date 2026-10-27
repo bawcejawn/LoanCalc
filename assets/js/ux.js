@@ -9,6 +9,8 @@ export const TOOL_INFO = {
   afford:       { name: 'Affordability', path: 'home-affordability-calculator/', pitch: 'How much home your income supports.' },
   compare:      { name: 'Compare loan types', path: 'fha-vs-conventional-calculator/', pitch: 'Conventional, FHA, VA, USDA side by side.' },
   credit:       { name: 'Credit score impact', path: 'credit-score-mortgage-rate-calculator/', pitch: 'What a higher score is worth each month.' },
+  rentbuy:      { name: 'Rent or buy?', path: 'rent-vs-buy-calculator/', pitch: 'Which leaves you better off over the years you\'d stay.' },
+  closing:      { name: 'Closing costs', path: 'closing-cost-calculator/', pitch: 'Every fee you\'ll pay to buy, and which ones you can shop.' },
   arm:          { name: 'ARM projector', path: 'arm-calculator/', pitch: 'What an adjustable rate could do later.' },
   amortization: { name: 'Payoff schedule', path: 'amortization-schedule-calculator/', pitch: 'Every payment, and what extra payments change.' },
   pmi:          { name: 'Remove PMI', path: 'pmi-removal-calculator/', pitch: 'The earliest month you can stop paying PMI.' },
@@ -19,7 +21,7 @@ export const TOOL_INFO = {
 };
 
 export const GOALS = {
-  buy:    { label: 'Buy a home', tools: ['payment', 'afford', 'compare'] },
+  buy:    { label: 'Buy a home', tools: ['payment', 'afford', 'rentbuy', 'closing'] },
   lower:  { label: 'Lower what I pay', tools: ['savings', 'pmi', 'refinance', 'import'] },
   faster: { label: 'Pay off my mortgage faster', tools: ['optimize', 'amortization', 'savings'] },
   explore:{ label: 'Just run numbers', tools: ['payment', 'amortization', 'savings'] },
@@ -28,8 +30,10 @@ export const GOALS = {
 // What to suggest next after each tool. Order matters: first unseen one is offered first.
 export const RELATED = {
   start: ['savings', 'payment'],
-  payment: ['afford', 'compare', 'amortization'],
-  afford: ['payment', 'compare', 'credit'],
+  payment: ['closing', 'afford', 'compare'],
+  rentbuy: ['afford', 'payment', 'closing'],
+  closing: ['compare', 'payment', 'import'],
+  afford: ['rentbuy', 'payment', 'compare'],
   compare: ['credit', 'payment', 'arm'],
   credit: ['compare', 'savings'],
   arm: ['compare', 'refinance'],

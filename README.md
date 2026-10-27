@@ -14,6 +14,8 @@ Free, private mortgage planning tools that run entirely in your browser. No sign
 | [Extra payment optimizer](https://bawcejawn.github.io/LoanCalc/extra-payment-calculator/) | Which prepayment strategy saves most; prepay vs invest |
 | [Refinance](https://bawcejawn.github.io/LoanCalc/refinance-calculator/) | True break-even including closing costs and term reset |
 | [Affordability](https://bawcejawn.github.io/LoanCalc/home-affordability-calculator/) | Comfortable, standard and stretch budgets |
+| [Rent or buy?](https://bawcejawn.github.io/LoanCalc/rent-vs-buy-calculator/) | Which leaves you better off over the years you'd stay |
+| [Closing costs](https://bawcejawn.github.io/LoanCalc/closing-cost-calculator/) | Itemized fees like a Loan Estimate, cash to close, which fees you can shop |
 | [Compare loan types](https://bawcejawn.github.io/LoanCalc/fha-vs-conventional-calculator/) | Conventional, FHA, VA, USDA, jumbo and ARM side by side with 2026 rules |
 | [ARM projector](https://bawcejawn.github.io/LoanCalc/arm-calculator/) | Payment paths after the fixed period vs a fixed rate |
 | [Credit score impact](https://bawcejawn.github.io/LoanCalc/credit-score-mortgage-rate-calculator/) | Rate, PMI and payment at every score band (no credit check) |

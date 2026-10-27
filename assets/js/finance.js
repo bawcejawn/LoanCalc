@@ -504,3 +504,64 @@ export function escrowCheck({ escrowMonthly, taxAnnual, insAnnual }) {
   const status = Math.abs(diff) <= need * RULES.escrowTolerance ? 'ok' : diff > 0 ? 'over' : 'short';
   return { need, diff, status, yearly: diff * 12 };
 }
+
+/* ---------- rent vs buy ---------- */
+
+/**
+ * Net worth of buying vs renting, year by year. Both sides start with the same cash and the same monthly budget:
+ * whoever pays less in a month invests the difference at `investPct`. Buying also gets home equity after selling costs.
+ * Ignores income-tax effects (most buyers take the standard deduction).
+ */
+export function rentVsBuy({ price, down, closing, ratePct, termMonths = 360, pmiMonthly = 0, pmiEndK = null, taxPct, insAnnual, hoa = 0,
+  maintPct = 1, appreciationPct = 3, sellPct = 6, rent, rentGrowthPct = 3, rentersIns = 15, investPct = 5, years = 30, upfrontFee = 0, loanAmount = null }) {
+  const loan = loanAmount ?? Math.max(0, price - down);
+  const pi = pmt(loan, ratePct, termMonths);
+  const r = ratePct / 1200, gi = Math.pow(1 + investPct / 100, 1 / 12) - 1, gh = Math.pow(1 + appreciationPct / 100, 1 / 12) - 1;
+  let bal = loan, value = price, rentNow = rent, ins = insAnnual;
+  let buyInv = 0, rentInv = down + closing + upfrontFee; // the renter invests the cash the buyer spends up front
+  const out = [];
+  let buyPaid = 0, rentPaid = 0;
+  for (let k = 1; k <= years * 12; k++) {
+    // buying costs this month
+    let interest = 0, principal = 0;
+    if (bal > 0.005) { interest = bal * r; principal = Math.min(pi - interest, bal); bal -= principal; }
+    const pmiNow = pmiMonthly && (pmiEndK == null || k < pmiEndK) ? pmiMonthly : 0;
+    const buyCost = (bal > 0.005 || principal > 0 ? interest + principal : 0) + pmiNow + value * taxPct / 1200 + ins / 12 + hoa + value * maintPct / 1200;
+    const rentCost = rentNow + rentersIns;
+    buyPaid += buyCost; rentPaid += rentCost;
+    // invest whichever side spends less
+    buyInv *= 1 + gi; rentInv *= 1 + gi;
+    if (buyCost > rentCost) rentInv += buyCost - rentCost; else buyInv += rentCost - buyCost;
+    value *= 1 + gh;
+    if (k % 12 === 0) {
+      rentNow *= 1 + rentGrowthPct / 100; ins *= 1 + appreciationPct / 100;
+      const equity = value * (1 - sellPct / 100) - bal;
+      out.push({ year: k / 12, buyWorth: equity + buyInv, rentWorth: rentInv, equity, value, balance: bal, buyPaid, rentPaid, rentMonthly: rentNow });
+    }
+  }
+  const be = out.find((y, i) => y.buyWorth >= y.rentWorth && out.slice(i).every((z) => z.buyWorth >= z.rentWorth));
+  return { years: out, breakEvenYear: be ? be.year : null, firstMonth: { pi, rent } };
+}
+
+/* ---------- closing costs ---------- */
+
+/** Itemized closing-cost estimate. Items: [{id, label, section, amount}] where section is
+ *  'lender' (Loan Estimate section A), 'noShop' (B), 'shop' (C), 'gov' (E taxes/recording), 'prepaid' (F), 'escrow' (G). */
+export function closingCosts({ loan, price, ratePct, insAnnual, taxAnnual, items, sellerCredit = 0, lenderCredit = 0, earnest = 0, down = 0, prepaidDays = 15, escrowMonths = 3, upfrontFeeCash = 0 }) {
+  const daily = loan * ratePct / 100 / 365;
+  const computed = [
+    { id: 'prepaidInterest', label: `Prepaid interest (${prepaidDays} days)`, section: 'prepaid', amount: daily * prepaidDays },
+    { id: 'insYear', label: 'First year of home insurance', section: 'prepaid', amount: insAnnual },
+    { id: 'escrowIns', label: `Escrow deposit: insurance (${escrowMonths} months)`, section: 'escrow', amount: insAnnual / 12 * escrowMonths },
+    { id: 'escrowTax', label: `Escrow deposit: property tax (${escrowMonths} months)`, section: 'escrow', amount: taxAnnual / 12 * escrowMonths },
+  ];
+  if (upfrontFeeCash) computed.push({ id: 'programFee', label: 'Upfront program fee (paid in cash)', section: 'lender', amount: upfrontFeeCash });
+  const all = [...items, ...computed].filter((i) => i.amount > 0.004);
+  const sum = (s) => all.filter((i) => s.includes(i.section)).reduce((a, i) => a + i.amount, 0);
+  const loanCosts = sum(['lender', 'noShop', 'shop']);
+  const otherCosts = sum(['gov', 'prepaid', 'escrow']);
+  const total = loanCosts + otherCosts;
+  const credits = sellerCredit + lenderCredit;
+  return { items: all, loanCosts, otherCosts, total, credits, net: Math.max(0, total - credits),
+    cashToClose: down + Math.max(0, total - credits) - earnest, pctOfLoan: loan ? total / loan * 100 : 0, pctOfPrice: price ? total / price * 100 : 0 };
+}
